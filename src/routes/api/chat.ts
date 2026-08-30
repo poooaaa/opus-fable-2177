@@ -195,7 +195,6 @@ function renderRefs(text: string, refs: Map<string, string>): string {
     .replace(/(\[[^\]]+\]\([^\n]+?\))\s*[.!?](?=\s*(?:\n|$))/gm, "$1");
 }
 
-
 async function streamAnswer(
   prompt: string,
   auth: Auth,
@@ -257,7 +256,11 @@ Aturan format jawaban:
       if (!Array.isArray(patches)) return;
       for (const patch of patches as Array<{ path?: unknown; value?: unknown }>) {
         scanRefs(patch.value, refs);
-        if (typeof patch.path === "string" && patch.path.includes("/text") && typeof patch.value === "string") {
+        if (
+          typeof patch.path === "string" &&
+          patch.path.includes("/text") &&
+          typeof patch.value === "string"
+        ) {
           push(patch.value);
         } else {
           collectText(patch.value, push);
@@ -281,7 +284,6 @@ Aturan format jawaban:
   return { response: renderRefs(text, refs).trim(), chatId };
 }
 
-
 export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
@@ -302,8 +304,7 @@ export const Route = createFileRoute("/api/chat")({
         const chatId = typeof payload.chatId === "string" ? payload.chatId : null;
 
         try {
-          const auth =
-            incomingAuth?.cookie && incomingAuth?.id ? incomingAuth : await getSession();
+          const auth = incomingAuth?.cookie && incomingAuth?.id ? incomingAuth : await getSession();
 
           const activeChatId = chatId ?? (await createChat(prompt, auth));
           const result = await streamAnswer(prompt, auth, activeChatId);
