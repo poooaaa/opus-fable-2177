@@ -225,7 +225,7 @@ async function streamAnswer(
 Aturan format jawaban:
 1. Tulis semua rumus/matematika dengan LaTeX: inline pakai $...$ dan blok pakai $$...$$ (jangan pakai \\( \\) atau \\[ \\]).
 2. WAJIB: setiap kali informasi berasal dari web search, sisipkan semua sitasi di AKHIR setiap paragraf/poin sebagai markdown link yang teksnya HANYA nama domain atau akronim media, contoh: [apnews.com](https://apnews.com/article/xxx) atau [AFP](https://www.afp.com). Sitasi menggantikan tanda baca penutup, jadi jangan tambahkan titik setelah sitasi. Setiap paragraf faktual harus punya minimal satu sitasi.
-3. Jangan tulis URL mentah dan jangan buat daftar "Sumber:" terpisah di akhir jawaban.
+3. Jangan tulis URL mentah, jangan buat daftar "Sumber:" terpisah di akhir jawaban, dan jangan tambahkan pemisah "---" setelah sitasi.
 4. Jika membuat tabel, gunakan tabel Markdown GFM. Tentukan perataan setiap kolom melalui baris pemisah: :--- untuk kiri, :---: untuk tengah, dan ---: untuk kanan. Buat isi sel ringkas agar mudah dibaca di layar kecil.]\n\n${prompt}`,
         },
       ],

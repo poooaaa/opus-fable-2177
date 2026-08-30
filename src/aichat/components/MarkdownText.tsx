@@ -47,7 +47,9 @@ function normalizeSources(input: string): string {
         return `${pre}${url}`;
       }
     })
-    .replace(/(\[[^\]]+\]\([^\n]+?\))\s*[.!?](?=\s*(?:\n|$))/gm, "$1");
+    .replace(/(\[[^\]]+\]\([^\n]+?\))\s*[.!?](?=\s*(?:\n|$))/gm, "$1")
+    .replace(/(\[[^\]]+\]\([^\n]+?\))[ \t]*-{3,}[ \t]*(?=\n|$)/gm, "$1")
+    .replace(/(\[[^\]]+\]\([^\n]+?\))[ \t]*\n[ \t]*-{3,}[ \t]*(?=\n|$)/gm, "$1\n");
 }
 
 function alignmentClass(node: unknown): string {
@@ -144,14 +146,14 @@ export function MarkdownText({ text }: { text: string }) {
           tbody: ({ children }) => <tbody className="bg-table-body">{children}</tbody>,
           th: ({ children, node }) => (
             <th
-              className={`min-w-[110px] max-w-[220px] border border-table-border px-5 py-4 align-top font-semibold text-foreground whitespace-normal break-words ${alignmentClass(node)}`}
+              className={`min-w-[110px] max-w-[330px] border border-table-border px-5 py-4 align-top font-semibold text-foreground whitespace-normal break-words ${alignmentClass(node)}`}
             >
               {children}
             </th>
           ),
           td: ({ children, node }) => (
             <td
-              className={`min-w-[110px] max-w-[220px] border border-table-border px-5 py-4 align-top whitespace-normal break-words ${alignmentClass(node)}`}
+              className={`min-w-[110px] max-w-[330px] border border-table-border px-5 py-4 align-top whitespace-normal break-words ${alignmentClass(node)}`}
             >
               {children}
             </td>
