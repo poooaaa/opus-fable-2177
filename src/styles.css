@@ -59,6 +59,14 @@
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
+  --color-loading-ring: var(--loading-ring);
+  --color-source: var(--source);
+  --color-source-hover: var(--source-hover);
+  --color-source-foreground: var(--source-foreground);
+  --color-source-count: var(--source-count);
+  --color-table-header: var(--table-header);
+  --color-table-body: var(--table-body);
+  --color-table-border: var(--table-border);
 }
 
 :root {
@@ -95,6 +103,14 @@
   --sidebar-accent-foreground: oklch(0.208 0.042 265.755);
   --sidebar-border: oklch(0.929 0.013 255.508);
   --sidebar-ring: oklch(0.704 0.04 256.788);
+  --loading-ring: oklch(0.68 0.24 39);
+  --source: oklch(0.27 0.01 285);
+  --source-hover: oklch(0.32 0.01 285);
+  --source-foreground: oklch(0.77 0.01 285);
+  --source-count: oklch(0.57 0.01 285);
+  --table-header: oklch(0.25 0.01 285);
+  --table-body: oklch(0.18 0.006 285);
+  --table-border: oklch(0.29 0.008 285);
 }
 
 .dark {
@@ -130,6 +146,37 @@
   --sidebar-accent-foreground: oklch(0.984 0.003 247.858);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.551 0.027 264.364);
+  --loading-ring: oklch(0.68 0.24 39);
+  --source: oklch(0.27 0.01 285);
+  --source-hover: oklch(0.32 0.01 285);
+  --source-foreground: oklch(0.77 0.01 285);
+  --source-count: oklch(0.57 0.01 285);
+  --table-header: oklch(0.25 0.01 285);
+  --table-body: oklch(0.18 0.006 285);
+  --table-border: oklch(0.29 0.008 285);
+}
+
+@keyframes avatar-ring-spin {
+  to { transform: rotate(360deg); }
+}
+
+@utility avatar-loading-ring {
+  &::before {
+    animation: avatar-ring-spin 0.85s linear infinite;
+    border: 2px solid color-mix(in oklab, var(--loading-ring) 28%, transparent);
+    border-top-color: var(--loading-ring);
+    border-right-color: var(--loading-ring);
+    border-radius: 9999px;
+    content: "";
+    inset: 0;
+    position: absolute;
+  }
+}
+
+@utility chat-table-scroll {
+  scrollbar-color: var(--table-border) transparent;
+  scrollbar-width: thin;
+  -webkit-overflow-scrolling: touch;
 }
 
 @layer base {

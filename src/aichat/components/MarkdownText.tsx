@@ -12,15 +12,16 @@ function isSourceLabel(label: string): boolean {
   return /^[A-Z0-9.&-]{2,10}$/.test(t); // akronim: AFP, BBC, AP, Xinhua…
 }
 
-function SourceChip({ href, label }: { href?: string | undefined; label: string }) {
+function SourceChip({ href, label, extraCount = 0 }: { href?: string | undefined; label: string; extraCount?: number }) {
   return (
     <a
       href={href}
       target="_blank"
       rel="noreferrer"
-      className="mx-[3px] inline-flex items-center rounded-md bg-[#2a2a30] px-[7px] py-[2px] align-[1px] text-[12.5px] font-normal leading-[1.35] tracking-normal text-[#b9b9c0] no-underline transition-colors hover:bg-[#33333a] hover:text-[#ececee]"
+      className="mx-[3px] inline-flex items-center gap-1 rounded-md bg-source px-[7px] py-[2px] align-[1px] text-[12.5px] font-normal leading-[1.35] tracking-normal text-source-foreground no-underline transition-colors hover:bg-source-hover hover:text-foreground"
     >
       {label}
+      {extraCount > 0 && <span className="text-source-count">+{extraCount}</span>}
     </a>
   );
 }
@@ -37,7 +38,15 @@ function normalizeSources(input: string): string {
       } catch {
         return `${pre}${url}`;
       }
-    });
+    })
+    .replace(/(\[[^\]]+\]\([^\n]+?\))\s*[.!?](?=\s*(?:\n|$))/gm, '$1');
+}
+
+function alignmentClass(node: unknown): string {
+  const align = (node as { properties?: { align?: unknown } } | undefined)?.properties?.align;
+  if (align === 'center') return 'text-center';
+  if (align === 'right') return 'text-right';
+  return 'text-left';
 }
 
 export function MarkdownText({ text }: { text: string }) {
@@ -63,10 +72,11 @@ export function MarkdownText({ text }: { text: string }) {
             <blockquote className="border-l-2 border-[#3a3a40] pl-3 my-2.5 text-[#b9b9c0] italic">{children}</blockquote>
           ),
           hr: () => <hr className="my-4 border-0 h-px bg-[#2e2e34]" />,
-          a: ({ children, href }) => {
+          a: ({ children, href, title }) => {
             const label = typeof children === 'string' ? children : String(children ?? '');
             if (isSourceLabel(label)) {
-              return <SourceChip href={href} label={label.trim()} />;
+              const extraCount = title?.startsWith('sources:+') ? Number.parseInt(title.slice(9), 10) || 0 : 0;
+              return <SourceChip href={href} label={label.trim()} extraCount={extraCount} />;
             }
             return (
               <a
@@ -99,15 +109,22 @@ export function MarkdownText({ text }: { text: string }) {
           },
           pre: ({ children }) => <pre className="my-3 w-full overflow-x-auto">{children}</pre>,
           table: ({ children }) => (
-            <div className="my-3 w-full overflow-x-auto">
-              <table className="w-full text-[14.5px] border-collapse">{children}</table>
+            <div className="chat-table-scroll my-5 w-full max-w-full overflow-x-auto overscroll-x-contain">
+              <table className="w-max min-w-full table-auto border-collapse text-[15px] leading-relaxed">{children}</table>
             </div>
           ),
-          thead: ({ children }) => <thead className="bg-[#1c1c20]">{children}</thead>,
-          th: ({ children }) => (
-            <th className="border border-[#2c2c33] px-2.5 py-1.5 text-left font-semibold text-white">{children}</th>
+          thead: ({ children }) => <thead className="bg-table-header">{children}</thead>,
+          tbody: ({ children }) => <tbody className="bg-table-body">{children}</tbody>,
+          th: ({ children, node }) => (
+            <th className={`min-w-[110px] max-w-[220px] border border-table-border px-5 py-4 align-top font-semibold text-foreground whitespace-normal break-words ${alignmentClass(node)}`}>
+              {children}
+            </th>
           ),
-          td: ({ children }) => <td className="border border-[#2c2c33] px-2.5 py-1.5 align-top">{children}</td>,
+          td: ({ children, node }) => (
+            <td className={`min-w-[110px] max-w-[220px] border border-table-border px-5 py-4 align-top whitespace-normal break-words ${alignmentClass(node)}`}>
+              {children}
+            </td>
+          ),
           img: ({ src, alt }) => (
             <img src={src as string} alt={alt || ''} className="my-3 rounded-lg max-w-full h-auto" loading="lazy" />
           ),

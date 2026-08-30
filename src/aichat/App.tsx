@@ -23,6 +23,7 @@ interface Message {
   text: string;
   time: string;
   thumbState?: 'up' | 'down' | null;
+  isPending?: boolean;
 }
 
 function getFormattedTime(): string {
@@ -85,7 +86,7 @@ export default function App() {
   const [rotatingId, setRotatingId] = useState<string | null>(null);
   const [inputValue, setInputValue] = useState('');
   const [showAttachMenu, setShowAttachMenu] = useState(false);
-  const tooltipTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const tooltipTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const streamEndRef = useRef<HTMLDivElement>(null);
 
@@ -211,14 +212,14 @@ export default function App() {
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === targetMsgId
-            ? { ...msg, text: answer || 'Tidak ada jawaban yang diterima. Coba kirim ulang.' }
+            ? { ...msg, text: answer || 'Tidak ada jawaban yang diterima. Coba kirim ulang.', isPending: false }
             : msg
         )
       );
     } catch (error) {
       const message = error instanceof Error ? error.message : 'Terjadi kesalahan tak terduga.';
       setMessages((prev) =>
-        prev.map((msg) => (msg.id === targetMsgId ? { ...msg, text: message } : msg))
+        prev.map((msg) => (msg.id === targetMsgId ? { ...msg, text: message, isPending: false } : msg))
       );
     }
   };
@@ -232,7 +233,7 @@ export default function App() {
     triggerTooltip(msgId, 'refreshed');
 
     setMessages((prev) =>
-      prev.map((msg) => (msg.id === msgId ? { ...msg, text: 'Menulis ulang jawaban…' } : msg))
+      prev.map((msg) => (msg.id === msgId ? { ...msg, text: '', isPending: true } : msg))
     );
 
     try {
@@ -281,9 +282,10 @@ export default function App() {
     const pendingAssistantMsg: Message = {
       id: assistantId,
       role: 'assistant',
-      text: 'Sedang berpikir…',
+      text: '',
       time: userTime,
       thumbState: null,
+      isPending: true,
     };
 
     lastPromptRef.current = query;
@@ -336,7 +338,7 @@ export default function App() {
                 <div key={msg.id} id={`user-message-${msg.id}`} className="w-full flex justify-end pt-4 sm:pt-6 pr-1">
                   <div
                     id="user-message-bubble"
-                    className="bg-[#222225] text-white px-5 py-2.5 rounded-full text-[16.5px] sm:text-[17px] leading-relaxed font-normal tracking-normal shadow-sm hover:bg-[#28282c] transition-colors cursor-default max-w-[85%] break-words"
+                    className="bg-[#222225] text-white px-5 py-2.5 rounded-[10px] text-[16.5px] sm:text-[17px] leading-relaxed font-normal tracking-normal shadow-sm hover:bg-[#28282c] transition-colors cursor-default max-w-[85%] break-words"
                   >
                     {msg.text}
                   </div>
@@ -348,27 +350,30 @@ export default function App() {
             const isDisliked = msg.thumbState === 'down';
             const isCopied = activeTooltip?.id === msg.id && activeTooltip.type === 'copied';
             const isMsgRotating = rotatingId === msg.id;
+            const isPending = msg.isPending === true;
 
             return (
               <div key={msg.id} id={`assistant-message-${msg.id}`} className="w-full mt-7 sm:mt-9">
                 <div id="assistant-content-row" className="flex items-start gap-3.5">
                   {/* AI Avatar Icon */}
-                  <img
-                    id="ai-avatar-image"
-                    src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSeSzFY4Xc9cEKU25lwZea080lZ8KkV0wXXb1VCmzLEo-DeDuci"
-                    alt="AI avatar"
-                    referrerPolicy="no-referrer"
-                    className="w-[30px] h-[30px] rounded-[9px] object-cover shrink-0 -mt-0.5 select-none shadow-sm"
-                  />
+                  <div className={`relative h-[34px] w-[34px] shrink-0 -mt-1 ${isPending ? 'avatar-loading-ring' : ''}`}>
+                    <img
+                      id="ai-avatar-image"
+                      src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSeSzFY4Xc9cEKU25lwZea080lZ8KkV0wXXb1VCmzLEo-DeDuci"
+                      alt="AI avatar"
+                      referrerPolicy="no-referrer"
+                      className={`absolute inset-0 m-auto object-cover select-none shadow-sm transition-[border-radius,width,height] duration-200 ${isPending ? 'h-[28px] w-[28px] rounded-full' : 'h-[30px] w-[30px] rounded-[9px]'}`}
+                    />
+                  </div>
 
                   {/* Message Text */}
                   <div id="assistant-text-wrapper" className="flex-1 min-w-0">
-                    <MarkdownText text={msg.text} />
+                    {!isPending && <MarkdownText text={msg.text} />}
                   </div>
                 </div>
 
                 {/* Action Bar (Thumbs, Reload, Copy, Timestamp) */}
-                <div
+                {!isPending && <div
                   id="assistant-actions-bar"
                   className="flex items-center justify-between mt-5 pl-[44px] pr-1 select-none"
                 >
@@ -472,7 +477,7 @@ export default function App() {
                   <div id={`message-timestamp-${msg.id}`} className="text-[#5f5f67] text-[14px] font-normal tracking-normal">
                     {msg.time}
                   </div>
-                </div>
+                </div>}
               </div>
             );
           })}
