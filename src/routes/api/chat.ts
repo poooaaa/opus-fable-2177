@@ -165,30 +165,35 @@ function collectText(value: unknown, push: (chunk: string) => void): void {
   }
 }
 
-/** Ubah penanda referensi jadi markdown link berlabel domain (dirender sebagai chip). */
+/** Ubah penanda referensi berurutan menjadi satu chip sumber dengan jumlah sisanya. */
 function renderRefs(text: string, refs: Map<string, string>): string {
-  const seenPerLine = new Set<string>();
-  let lastLineIndex = -1;
-  return text.replace(/@@REF:([A-Za-z0-9_-]+)@@/g, (_m, id: string, offset: number) => {
-    const url = refs.get(id);
-    if (!url) return "";
-    const lineIndex = text.slice(0, offset).split("\n").length;
-    if (lineIndex !== lastLineIndex) {
-      seenPerLine.clear();
-      lastLineIndex = lineIndex;
-    }
-    let host: string;
-    try {
-      host = new URL(url).hostname.replace(/^www\./, "");
-    } catch {
-      return "";
-    }
-    if (seenPerLine.has(host)) return "";
-    seenPerLine.add(host);
-    return `[${host}](${url})`;
-  });
-}
+  return text
+    .replace(/(?:@@REF:[A-Za-z0-9_-]+@@\s*)+/g, (group) => {
+      const ids = [...group.matchAll(/@@REF:([A-Za-z0-9_-]+)@@/g)]
+        .map((match) => match[1])
+        .filter((id): id is string => Boolean(id));
+      const sources = new Map<string, string>();
 
+      for (const id of ids) {
+        const url = refs.get(id);
+        if (!url) continue;
+        try {
+          const host = new URL(url).hostname.replace(/^www\./, "");
+          if (!sources.has(host)) sources.set(host, url);
+        } catch {
+          // Abaikan URL referensi yang tidak valid.
+        }
+      }
+
+      const first = sources.entries().next().value as [string, string] | undefined;
+      if (!first) return "";
+      const hiddenCount = sources.size - 1;
+      const title = hiddenCount > 0 ? ` "sources:+${hiddenCount}"` : "";
+      return `[${first[0]}](${first[1]}${title})`;
+    })
+    .replace(/([.!?])\s*(\[[^\]]+\]\([^\n)]+(?:\([^)]*\)[^)]*)?\))([.!?])/g, "$1 $2")
+    .replace(/(\[[^\]]+\]\([^\n]+?\))\s*[.!?](?=\s*(?:\n|$))/gm, "$1");
+}
 
 async function streamAnswer(
   prompt: string,
@@ -219,8 +224,9 @@ async function streamAnswer(
           text: `[Konteks waktu: hari ini ${new Date().toLocaleDateString("id-ID", { weekday: "long", year: "numeric", month: "long", day: "numeric", timeZone: "Asia/Jakarta" })}. Jika pertanyaan menyangkut berita/peristiwa terbaru, gunakan web search.
 Aturan format jawaban:
 1. Tulis semua rumus/matematika dengan LaTeX: inline pakai $...$ dan blok pakai $$...$$ (jangan pakai \\( \\) atau \\[ \\]).
-2. WAJIB: setiap kali informasi berasal dari web search, sisipkan sitasi di AKHIR setiap paragraf/poin (sebelum tanda titik) sebagai markdown link yang teksnya HANYA nama domain atau akronim media, contoh: [apnews.com](https://apnews.com/article/xxx) atau [AFP](https://www.afp.com). Setiap paragraf faktual harus punya minimal satu sitasi seperti itu.
-3. Jangan tulis URL mentah, jangan buat daftar "Sumber:" terpisah di akhir jawaban.]\n\n${prompt}`,
+2. WAJIB: setiap kali informasi berasal dari web search, sisipkan semua sitasi di AKHIR setiap paragraf/poin sebagai markdown link yang teksnya HANYA nama domain atau akronim media, contoh: [apnews.com](https://apnews.com/article/xxx) atau [AFP](https://www.afp.com). Sitasi menggantikan tanda baca penutup, jadi jangan tambahkan titik setelah sitasi. Setiap paragraf faktual harus punya minimal satu sitasi.
+3. Jangan tulis URL mentah dan jangan buat daftar "Sumber:" terpisah di akhir jawaban.
+4. Jika membuat tabel, gunakan tabel Markdown GFM. Tentukan perataan setiap kolom melalui baris pemisah: :--- untuk kiri, :---: untuk tengah, dan ---: untuk kanan. Buat isi sel ringkas agar mudah dibaca di layar kecil.]\n\n${prompt}`,
         },
       ],
       messageFiles: [],
@@ -250,7 +256,11 @@ Aturan format jawaban:
       if (!Array.isArray(patches)) return;
       for (const patch of patches as Array<{ path?: unknown; value?: unknown }>) {
         scanRefs(patch.value, refs);
-        if (typeof patch.path === "string" && patch.path.includes("/text") && typeof patch.value === "string") {
+        if (
+          typeof patch.path === "string" &&
+          patch.path.includes("/text") &&
+          typeof patch.value === "string"
+        ) {
           push(patch.value);
         } else {
           collectText(patch.value, push);
@@ -274,7 +284,6 @@ Aturan format jawaban:
   return { response: renderRefs(text, refs).trim(), chatId };
 }
 
-
 export const Route = createFileRoute("/api/chat")({
   server: {
     handlers: {
@@ -295,8 +304,7 @@ export const Route = createFileRoute("/api/chat")({
         const chatId = typeof payload.chatId === "string" ? payload.chatId : null;
 
         try {
-          const auth =
-            incomingAuth?.cookie && incomingAuth?.id ? incomingAuth : await getSession();
+          const auth = incomingAuth?.cookie && incomingAuth?.id ? incomingAuth : await getSession();
 
           const activeChatId = chatId ?? (await createChat(prompt, auth));
           const result = await streamAnswer(prompt, auth, activeChatId);
