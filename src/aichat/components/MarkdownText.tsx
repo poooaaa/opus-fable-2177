@@ -115,6 +115,9 @@ export function MarkdownText({ text }: { text: string }) {
             );
           },
           code: ({ className, children, ...props }) => {
+            if (/language-(echarts|chart)/.test(className || "")) {
+              return <EChart code={String(children)} />;
+            }
             const isBlock = /language-/.test(className || "") || String(children).includes("\n");
             if (isBlock) {
               return (
