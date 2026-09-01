@@ -16,6 +16,7 @@ import {
 import { ProjectContextIcon } from "./components/ProjectIcon";
 import { MarkdownText } from "./components/MarkdownText";
 import { ClaudeCopyIcon } from "./components/CopyIcon";
+import aiAvatar from "@/assets/ai-avatar.png";
 
 interface Message {
   id: string;
