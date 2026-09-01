@@ -28,10 +28,11 @@ export function ChartView({ code }: { code: string }) {
       if (disposed || !canvas) return;
 
       const options = (config["options"] as Record<string, unknown> | undefined) ?? {};
+      const conf = config as { type?: "bar"; data?: { labels: string[]; datasets: [] } };
       chart = new Chart(canvas, {
-        type: "bar",
-        data: { labels: [], datasets: [] },
-        ...(config as { type: "bar"; data: { labels: string[]; datasets: [] } }),
+        ...conf,
+        type: conf.type ?? "bar",
+        data: conf.data ?? { labels: [], datasets: [] },
         options: {
           responsive: true,
           maintainAspectRatio: false,
