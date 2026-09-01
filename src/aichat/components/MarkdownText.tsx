@@ -116,11 +116,11 @@ export function MarkdownText({ text }: { text: string }) {
           },
           code: ({ className, children, ...props }) => {
             const raw = String(children);
-            if (/language-(echarts|chart)/.test(className || "")) {
-              return <EChart code={raw} />;
+            if (/language-(chartjs|echarts|chart)/.test(className || "")) {
+              return <ChartView code={raw} />;
             }
-            if (/^\s*echarts:/.test(raw)) {
-              return <EChart code={raw.replace(/^\s*echarts:/, "")} />;
+            if (/^\s*(chartjs|echarts|chart):/.test(raw)) {
+              return <ChartView code={raw.replace(/^\s*(chartjs|echarts|chart):/, "")} />;
             }
             const isBlock = /language-/.test(className || "") || String(children).includes("\n");
             if (isBlock) {
