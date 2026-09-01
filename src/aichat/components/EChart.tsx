@@ -7,7 +7,11 @@ export function EChart({ code }: { code: string }) {
 
   useEffect(() => {
     let disposed = false;
-    let chart: { resize: () => void; dispose: () => void } | null = null;
+    let chart: {
+      resize: () => void;
+      dispose: () => void;
+      setOption: (option: unknown) => void;
+    } | null = null;
     let observer: ResizeObserver | null = null;
 
     const run = async () => {
@@ -31,11 +35,11 @@ export function EChart({ code }: { code: string }) {
       if (disposed || !hostRef.current) return;
 
       chart = echarts.init(hostRef.current, "dark", { renderer: "canvas" });
-      chart.setOption?.({
+      chart.setOption({
         backgroundColor: "transparent",
         textStyle: { fontFamily: "inherit" },
         ...option,
-      } as never);
+      });
 
       observer = new ResizeObserver(() => chart?.resize());
       observer.observe(hostRef.current);
