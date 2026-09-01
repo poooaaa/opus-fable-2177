@@ -2,7 +2,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
-import { EChart } from "./EChart";
+import { ChartView } from "./ChartView";
 
 /** Sumber ditampilkan sebagai chip kecil (mis. "apnews.com", "AFP"). */
 function isSourceLabel(label: string): boolean {
@@ -116,11 +116,11 @@ export function MarkdownText({ text }: { text: string }) {
           },
           code: ({ className, children, ...props }) => {
             const raw = String(children);
-            if (/language-(echarts|chart)/.test(className || "")) {
-              return <EChart code={raw} />;
+            if (/language-(chartjs|echarts|chart)/.test(className || "")) {
+              return <ChartView code={raw} />;
             }
-            if (/^\s*echarts:/.test(raw)) {
-              return <EChart code={raw.replace(/^\s*echarts:/, "")} />;
+            if (/^\s*(chartjs|echarts|chart):/.test(raw)) {
+              return <ChartView code={raw.replace(/^\s*(chartjs|echarts|chart):/, "")} />;
             }
             const isBlock = /language-/.test(className || "") || String(children).includes("\n");
             if (isBlock) {
@@ -145,7 +145,7 @@ export function MarkdownText({ text }: { text: string }) {
           pre: ({ children }) => {
             const child = Array.isArray(children) ? children[0] : children;
             const cls = (child as { props?: { className?: string } } | undefined)?.props?.className;
-            if (/language-(echarts|chart)/.test(cls || "")) return <>{children}</>;
+            if (/language-(chartjs|echarts|chart)/.test(cls || "")) return <>{children}</>;
             return <pre className="my-3 w-full overflow-x-auto">{children}</pre>;
           },
           table: ({ children }) => (
