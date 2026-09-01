@@ -2,6 +2,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
+import { EChart } from "./EChart";
 
 /** Sumber ditampilkan sebagai chip kecil (mis. "apnews.com", "AFP"). */
 function isSourceLabel(label: string): boolean {
