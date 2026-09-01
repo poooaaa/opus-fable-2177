@@ -29,7 +29,9 @@ export function ChartView({ code }: { code: string }) {
 
       const options = (config["options"] as Record<string, unknown> | undefined) ?? {};
       chart = new Chart(canvas, {
-        ...(config as { type: "bar" }),
+        type: "bar",
+        data: { labels: [], datasets: [] },
+        ...(config as { type: "bar"; data: { labels: string[]; datasets: [] } }),
         options: {
           responsive: true,
           maintainAspectRatio: false,
