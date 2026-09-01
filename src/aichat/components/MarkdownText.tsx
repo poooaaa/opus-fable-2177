@@ -2,6 +2,7 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
+import { EChart } from "./EChart";
 
 /** Sumber ditampilkan sebagai chip kecil (mis. "apnews.com", "AFP"). */
 function isSourceLabel(label: string): boolean {
@@ -114,6 +115,13 @@ export function MarkdownText({ text }: { text: string }) {
             );
           },
           code: ({ className, children, ...props }) => {
+            const raw = String(children);
+            if (/language-(echarts|chart)/.test(className || "")) {
+              return <EChart code={raw} />;
+            }
+            if (/^\s*echarts:/.test(raw)) {
+              return <EChart code={raw.replace(/^\s*echarts:/, "")} />;
+            }
             const isBlock = /language-/.test(className || "") || String(children).includes("\n");
             if (isBlock) {
               return (
@@ -134,7 +142,12 @@ export function MarkdownText({ text }: { text: string }) {
               </code>
             );
           },
-          pre: ({ children }) => <pre className="my-3 w-full overflow-x-auto">{children}</pre>,
+          pre: ({ children }) => {
+            const child = Array.isArray(children) ? children[0] : children;
+            const cls = (child as { props?: { className?: string } } | undefined)?.props?.className;
+            if (/language-(echarts|chart)/.test(cls || "")) return <>{children}</>;
+            return <pre className="my-3 w-full overflow-x-auto">{children}</pre>;
+          },
           table: ({ children }) => (
             <div className="chat-table-scroll my-5 w-full max-w-full overflow-x-auto overscroll-x-contain">
               <table className="w-max min-w-full table-auto border-collapse text-[15px] leading-relaxed">

@@ -156,23 +156,14 @@
   --table-border: oklch(0.29 0.008 285);
 }
 
-@keyframes avatar-ring-spin {
+@keyframes avatar-spin {
   to {
     transform: rotate(360deg);
   }
 }
 
-@utility avatar-loading-ring {
-  &::before {
-    animation: avatar-ring-spin 0.85s linear infinite;
-    border: 2px solid color-mix(in oklab, var(--loading-ring) 28%, transparent);
-    border-top-color: var(--loading-ring);
-    border-right-color: var(--loading-ring);
-    border-radius: 9999px;
-    content: "";
-    inset: -4.25px;
-    position: absolute;
-  }
+@utility avatar-spinning {
+  animation: avatar-spin 1s linear infinite;
 }
 
 @utility chat-table-scroll {

@@ -226,7 +226,8 @@ Aturan format jawaban:
 1. Tulis semua rumus/matematika dengan LaTeX: inline pakai $...$ dan blok pakai $$...$$ (jangan pakai \\( \\) atau \\[ \\]).
 2. WAJIB: setiap kali informasi berasal dari web search, sisipkan semua sitasi di AKHIR setiap paragraf/poin sebagai markdown link yang teksnya HANYA nama domain atau akronim media, contoh: [apnews.com](https://apnews.com/article/xxx) atau [AFP](https://www.afp.com). Sitasi menggantikan tanda baca penutup, jadi jangan tambahkan titik setelah sitasi. Setiap paragraf faktual harus punya minimal satu sitasi.
 3. Jangan tulis URL mentah, jangan buat daftar "Sumber:" terpisah di akhir jawaban, dan jangan tambahkan pemisah "---" setelah sitasi.
-4. Jika membuat tabel, gunakan tabel Markdown GFM. Tentukan perataan setiap kolom melalui baris pemisah: :--- untuk kiri, :---: untuk tengah, dan ---: untuk kanan. Buat isi sel ringkas agar mudah dibaca di layar kecil.]\n\n${prompt}`,
+4. Jika data cocok divisualkan sebagai grafik, buat grafik dengan ECharts: tulis blok kode berbahasa echarts (\`\`\`echarts) yang isinya HANYA satu objek JSON opsi ECharts valid (mis. {"xAxis":{...},"yAxis":{...},"series":[...]}), tanpa komentar, tanpa fungsi, tanpa variabel. Jangan set backgroundColor. Untuk grafik di dalam sel tabel, gunakan inline code satu baris: \`echarts:{...}\`.
+5. Jika membuat tabel, gunakan tabel Markdown GFM. Tentukan perataan setiap kolom melalui baris pemisah: :--- untuk kiri, :---: untuk tengah, dan ---: untuk kanan. Buat isi sel ringkas agar mudah dibaca di layar kecil.]\n\n${prompt}`,
         },
       ],
       messageFiles: [],
