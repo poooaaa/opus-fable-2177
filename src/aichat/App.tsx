@@ -369,15 +369,12 @@ export default function App() {
               <div key={msg.id} id={`assistant-message-${msg.id}`} className="w-full mt-7 sm:mt-9">
                 <div id="assistant-content-row" className="flex items-start gap-3.5">
                   {/* AI Avatar Icon */}
-                  <div
-                    className={`relative h-[34px] w-[34px] shrink-0 -mt-1 ${isPending ? "avatar-loading-ring" : ""}`}
-                  >
+                  <div className="relative h-[34px] w-[34px] shrink-0 -mt-1">
                     <img
                       id="ai-avatar-image"
-                      src="https://encrypted-tbn1.gstatic.com/images?q=tbn:ANd9GcSeSzFY4Xc9cEKU25lwZea080lZ8KkV0wXXb1VCmzLEo-DeDuci"
+                      src={aiAvatar}
                       alt="AI avatar"
-                      referrerPolicy="no-referrer"
-                      className={`absolute inset-0 m-auto object-cover select-none shadow-sm transition-[border-radius,width,height] duration-200 ${isPending ? "h-[28px] w-[28px] rounded-full" : "h-[30px] w-[30px] rounded-[9px]"}`}
+                      className={`absolute inset-0 m-auto h-[30px] w-[30px] rounded-[9px] object-cover select-none shadow-sm ${isPending ? "avatar-spinning" : ""}`}
                     />
                   </div>
 
