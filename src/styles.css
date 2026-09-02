@@ -163,7 +163,7 @@
 }
 
 @utility avatar-spinning {
-  animation: avatar-spin 1s linear infinite;
+  animation: avatar-spin 2.6s linear infinite;
 }
 
 @utility chat-table-scroll {
