@@ -1,15 +1,26 @@
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 
 type ImageItem = { url: string; title: string };
 
+/** Cache global: hasil pencarian tidak diambil ulang saat komponen dirender ulang. */
+const imageCache = new Map<string, ImageItem[]>();
+
 /** Gambar hasil pencarian Bing, dipakai lewat sintaks [bimg={query}]. */
-export function BingImage({ query }: { query: string }) {
-  const [items, setItems] = useState<ImageItem[] | null>(null);
+function BingImageBase({ query }: { query: string }) {
+  const cached = imageCache.get(query) ?? null;
+  const [items, setItems] = useState<ImageItem[] | null>(cached);
   const [index, setIndex] = useState(0);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     let disposed = false;
+    const hit = imageCache.get(query);
+    if (hit) {
+      setItems(hit);
+      setIndex(0);
+      setFailed(false);
+      return;
+    }
     setItems(null);
     setIndex(0);
     setFailed(false);
