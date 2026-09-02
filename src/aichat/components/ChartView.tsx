@@ -48,7 +48,7 @@ export function ChartView({ code }: { code: string }) {
         if (typeof c !== "string") return false;
         const m = /^#([0-9a-f]{6})$/i.exec(c.trim());
         if (!m) return false;
-        const n = parseInt(m[1], 16);
+        const n = parseInt(m[1] ?? "", 16);
         const r = (n >> 16) & 255;
         const g = (n >> 8) & 255;
         const b = n & 255;
