@@ -66,21 +66,9 @@ async function requestAnswer(
 }
 
 export default function App() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "msg-1",
-      role: "user",
-      text: "hi",
-      time: "4:31pm",
-    },
-    {
-      id: "msg-2",
-      role: "assistant",
-      text: "Hello! How’s your day going so far?",
-      time: "4:32pm",
-      thumbState: null,
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [usedCount, setUsedCount] = useState(0);
+  const [cooldown, setCooldown] = useState(0);
 
   const [activeTooltip, setActiveTooltip] = useState<{
     id: string;
