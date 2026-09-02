@@ -90,7 +90,7 @@ function cellClass(node: unknown): string {
 }
 
 
-export function MarkdownText({ text }: { text: string }) {
+function MarkdownTextBase({ text }: { text: string }) {
   const content = normalizeSources(text);
   return (
     <div className="text-[#ececee] text-[16.5px] sm:text-[17.5px] leading-[1.5] font-normal tracking-[-0.01em] break-words [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
