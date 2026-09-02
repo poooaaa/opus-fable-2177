@@ -172,6 +172,59 @@
   -webkit-overflow-scrolling: touch;
 }
 
+/* Grafik & gambar di dalam sel tabel: tanpa kontainer scroll, kolom melebar bebas */
+td.media-cell .chart-scroll,
+th.media-cell .chart-scroll {
+  overflow: visible;
+  margin: 0;
+  width: auto;
+  max-width: none;
+}
+
+td.media-cell .chart-box,
+th.media-cell .chart-box {
+  height: 180px;
+  min-width: 300px;
+  width: 300px;
+}
+
+td.media-cell .chat-media-img,
+th.media-cell .chat-media-img {
+  height: 110px;
+  width: auto;
+  max-width: none;
+}
+
+td.media-cell .chat-media-skeleton,
+th.media-cell .chat-media-skeleton {
+  height: 110px;
+  width: 160px;
+}
+
+.chat-media-figure {
+  display: inline-block;
+  line-height: 0;
+}
+
+.chat-media-img {
+  display: block;
+  max-width: 100%;
+  max-height: 260px;
+  width: auto;
+  height: auto;
+  border: 1px solid var(--table-border);
+}
+
+.chat-media-skeleton {
+  display: inline-block;
+  width: 220px;
+  height: 150px;
+  background: var(--table-body);
+  border: 1px solid var(--table-border);
+  animation: avatar-spin 0s;
+}
+
+
 @layer base {
   * {
     border-color: var(--color-border);

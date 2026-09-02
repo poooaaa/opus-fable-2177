@@ -3,6 +3,8 @@ import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import { ChartView } from "./ChartView";
+import { BingImage } from "./BingImage";
+
 
 /** Sumber ditampilkan sebagai chip kecil (mis. "apnews.com", "AFP"). */
 function isSourceLabel(label: string): boolean {
@@ -38,6 +40,7 @@ function SourceChip({
 /** URL mentah -> markdown link dengan label domain, agar tampil sebagai chip sumber. */
 function normalizeSources(input: string): string {
   return input
+    .replace(/\[bimg=\{([^}]+)\}\]/g, (_m, q: string) => `\`bimg:${q.trim()}\``)
     .replace(/\\\((.+?)\\\)/gs, (_m, m1) => `$${m1}$`)
     .replace(/\\\[(.+?)\\\]/gs, (_m, m1) => `$$${m1}$$`)
     .replace(/(^|[\s(])(https?:\/\/([^\s)>\]]+))/g, (_m, pre: string, url: string) => {
@@ -59,6 +62,27 @@ function alignmentClass(node: unknown): string {
   if (align === "right") return "text-right";
   return "text-left";
 }
+
+/** Sel tabel yang memuat grafik/gambar tidak dibatasi lebarnya. */
+function cellHasMedia(node: unknown): boolean {
+  const item = node as
+    | { tagName?: string; value?: string; children?: unknown[] }
+    | null
+    | undefined;
+  if (!item || typeof item !== "object") return false;
+  if (item.tagName === "img") return true;
+  if (typeof item.value === "string" && /^\s*(chartjs|echarts|chart|bimg)\s*:/.test(item.value)) {
+    return true;
+  }
+  return (item.children ?? []).some((child) => cellHasMedia(child));
+}
+
+function cellClass(node: unknown): string {
+  return cellHasMedia(node)
+    ? "media-cell max-w-none whitespace-nowrap"
+    : "min-w-[110px] max-w-[330px] whitespace-normal break-words";
+}
+
 
 export function MarkdownText({ text }: { text: string }) {
   const content = normalizeSources(text);
@@ -122,6 +146,9 @@ export function MarkdownText({ text }: { text: string }) {
             if (/^\s*(chartjs|echarts|chart):/.test(raw)) {
               return <ChartView code={raw.replace(/^\s*(chartjs|echarts|chart):/, "")} />;
             }
+            if (/^\s*bimg\s*:/.test(raw)) {
+              return <BingImage query={raw.replace(/^\s*bimg\s*:/, "").trim()} />;
+            }
             const isBlock = /language-/.test(className || "") || String(children).includes("\n");
             if (isBlock) {
               return (
@@ -159,18 +186,19 @@ export function MarkdownText({ text }: { text: string }) {
           tbody: ({ children }) => <tbody className="bg-table-body">{children}</tbody>,
           th: ({ children, node }) => (
             <th
-              className={`min-w-[110px] max-w-[330px] border border-table-border px-5 py-4 align-top font-semibold text-foreground whitespace-normal break-words ${alignmentClass(node)}`}
+              className={`border border-table-border px-5 py-4 align-top font-semibold text-foreground ${cellClass(node)} ${alignmentClass(node)}`}
             >
               {children}
             </th>
           ),
           td: ({ children, node }) => (
             <td
-              className={`min-w-[110px] max-w-[330px] border border-table-border px-5 py-4 align-top whitespace-normal break-words ${alignmentClass(node)}`}
+              className={`border border-table-border px-5 py-4 align-top ${cellClass(node)} ${alignmentClass(node)}`}
             >
               {children}
             </td>
           ),
+
           img: ({ src, alt }) => (
             <img
               src={src as string}
