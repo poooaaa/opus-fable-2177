@@ -314,6 +314,19 @@ export default function App() {
     streamEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
 
+  // Limit: 4 jawaban, lalu hitung mundur 30 detik sebelum limit di-reset.
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setTimeout(() => {
+      setCooldown((prev) => {
+        const next = prev - 1;
+        if (next <= 0) setUsedCount(0);
+        return next;
+      });
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [cooldown]);
+
   // Any page-level scroll/resize also invalidates the tooltip anchor.
   useEffect(() => {
     if (!copiedSuggestion) return;
