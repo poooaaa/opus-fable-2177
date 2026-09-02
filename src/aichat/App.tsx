@@ -206,9 +206,13 @@ export default function App() {
     setCopiedSuggestion(null);
   };
 
-  const runPrompt = async (prompt: string, targetMsgId: string) => {
+  const runPrompt = async (prompt: string, targetMsgId: string, freshChat = false) => {
     try {
-      const data = await requestAnswer(prompt, authRef.current, chatIdRef.current);
+      const data = await requestAnswer(
+        prompt,
+        authRef.current,
+        freshChat ? null : chatIdRef.current,
+      );
       if (data.auth) authRef.current = data.auth;
       if (data.chatId) chatIdRef.current = data.chatId;
       const answer = data.response?.trim();
@@ -245,14 +249,21 @@ export default function App() {
       prev.map((msg) => (msg.id === msgId ? { ...msg, text: "", isPending: true } : msg)),
     );
 
+    // Regenerasi = percakapan baru + minta jawaban versi berbeda, bukan sekadar muat ulang.
+    chatIdRef.current = null;
     try {
-      await runPrompt(prompt, msgId);
+      await runPrompt(
+        `${prompt}\n\n[Regenerasi: buat ulang jawaban dari awal dengan susunan dan kalimat yang berbeda dari sebelumnya, tetap akurat.]`,
+        msgId,
+        true,
+      );
     } finally {
       setRotatingId(null);
       setIsSending(false);
       void originalText;
     }
   };
+
 
   const toggleThumb = (msgId: string, type: "up" | "down") => {
     setMessages((prev) =>
