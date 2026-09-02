@@ -40,6 +40,7 @@ function SourceChip({
 /** URL mentah -> markdown link dengan label domain, agar tampil sebagai chip sumber. */
 function normalizeSources(input: string): string {
   return input
+    .replace(/\[bimg=\{([^}]+)\}\]/g, (_m, q: string) => `\`bimg:${q.trim()}\``)
     .replace(/\\\((.+?)\\\)/gs, (_m, m1) => `$${m1}$`)
     .replace(/\\\[(.+?)\\\]/gs, (_m, m1) => `$$${m1}$$`)
     .replace(/(^|[\s(])(https?:\/\/([^\s)>\]]+))/g, (_m, pre: string, url: string) => {
@@ -61,6 +62,27 @@ function alignmentClass(node: unknown): string {
   if (align === "right") return "text-right";
   return "text-left";
 }
+
+/** Sel tabel yang memuat grafik/gambar tidak dibatasi lebarnya. */
+function cellHasMedia(node: unknown): boolean {
+  const item = node as
+    | { tagName?: string; value?: string; children?: unknown[] }
+    | null
+    | undefined;
+  if (!item || typeof item !== "object") return false;
+  if (item.tagName === "img") return true;
+  if (typeof item.value === "string" && /^\s*(chartjs|echarts|chart|bimg)\s*:/.test(item.value)) {
+    return true;
+  }
+  return (item.children ?? []).some((child) => cellHasMedia(child));
+}
+
+function cellClass(node: unknown): string {
+  return cellHasMedia(node)
+    ? "media-cell max-w-none whitespace-nowrap"
+    : "min-w-[110px] max-w-[330px] whitespace-normal break-words";
+}
+
 
 export function MarkdownText({ text }: { text: string }) {
   const content = normalizeSources(text);
