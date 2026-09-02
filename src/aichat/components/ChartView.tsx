@@ -60,15 +60,13 @@ export function ChartView({ code }: { code: string }) {
   }
 
   return (
-    <div className="chat-table-scroll my-4 w-full max-w-full overflow-x-auto overscroll-x-contain">
-      <div
-        className="relative h-[300px] w-full border border-table-border bg-table-body p-2"
-        style={{ minWidth: 520 }}
-      >
+    <div className="chart-scroll chat-table-scroll my-4 w-full max-w-full overflow-x-auto overscroll-x-contain">
+      <div className="chart-box relative h-[300px] w-full min-w-[520px] border border-table-border bg-table-body p-2">
         <canvas ref={canvasRef} />
       </div>
     </div>
   );
+
 }
 
 export default ChartView;
