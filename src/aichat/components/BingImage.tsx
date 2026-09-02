@@ -44,6 +44,7 @@ function BingImageBase({ query }: { query: string }) {
         if (disposed) return;
         const all = data.images ?? [];
         if (all.length === 0) {
+          imageCache.set(query, []);
           setItems([]);
           return;
         }
