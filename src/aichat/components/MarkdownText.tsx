@@ -3,6 +3,8 @@ import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import { ChartView } from "./ChartView";
+import { BingImage } from "./BingImage";
+
 
 /** Sumber ditampilkan sebagai chip kecil (mis. "apnews.com", "AFP"). */
 function isSourceLabel(label: string): boolean {
