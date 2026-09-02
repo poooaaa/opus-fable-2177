@@ -221,4 +221,6 @@ function MarkdownTextBase({ text }: { text: string }) {
   );
 }
 
+export const MarkdownText = memo(MarkdownTextBase);
+
 export default MarkdownText;
