@@ -112,4 +112,6 @@ function BingImageBase({ query }: { query: string }) {
   );
 }
 
+export const BingImage = memo(BingImageBase);
+
 export default BingImage;
