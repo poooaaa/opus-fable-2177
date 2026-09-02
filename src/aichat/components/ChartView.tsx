@@ -28,11 +28,48 @@ export function ChartView({ code }: { code: string }) {
       if (disposed || !canvas) return;
 
       const options = (config["options"] as Record<string, unknown> | undefined) ?? {};
-      const conf = config as { type?: "bar"; data?: { labels: string[]; datasets: [] } };
+      const conf = config as {
+        type?: "bar";
+        data?: { labels: string[]; datasets: Record<string, unknown>[] };
+      };
+
+      // Palet cerah: grafik harus tetap terlihat di atas latar gelap.
+      const BRIGHT = [
+        "#FA520F",
+        "#FFC53D",
+        "#4CC9F0",
+        "#57D9A3",
+        "#F472B6",
+        "#A78BFA",
+        "#FDE047",
+        "#34D399",
+      ];
+      const isDark = (c: unknown) => {
+        if (typeof c !== "string") return false;
+        const m = /^#([0-9a-f]{6})$/i.exec(c.trim());
+        if (!m) return false;
+        const n = parseInt(m[1] ?? "", 16);
+        const r = (n >> 16) & 255;
+        const g = (n >> 8) & 255;
+        const b = n & 255;
+        return 0.299 * r + 0.587 * g + 0.114 * b < 110;
+      };
+      const brighten = (v: unknown, i: number): unknown => {
+        if (Array.isArray(v)) return v.map((c, j) => (isDark(c) || c == null ? BRIGHT[j % BRIGHT.length] : c));
+        if (v == null || isDark(v)) return BRIGHT[i % BRIGHT.length];
+        return v;
+      };
+      const data = conf.data ?? { labels: [], datasets: [] };
+      const datasets = (data.datasets ?? []).map((ds, i) => ({
+        ...ds,
+        backgroundColor: brighten(ds["backgroundColor"], i),
+        borderColor: brighten(ds["borderColor"] ?? ds["backgroundColor"], i),
+      }));
+
       chart = new Chart(canvas, {
         ...conf,
         type: conf.type ?? "bar",
-        data: conf.data ?? { labels: [], datasets: [] },
+        data: { ...data, datasets } as never,
         options: {
           responsive: true,
           maintainAspectRatio: false,

@@ -455,7 +455,6 @@ export default function App() {
                       <button
                         id={`btn-retry-${msg.id}`}
                         type="button"
-                        onClick={() => handleRotate(msg.id, msg.text)}
                         aria-label="Regenerate response"
                         className="p-1 -m-1 rounded-md transition-colors hover:text-[#d4d4d8] relative flex items-center justify-center text-[#73737c]"
                       >
@@ -617,7 +616,6 @@ export default function App() {
                 <button
                   id="btn-composer-plus"
                   type="button"
-                  onClick={() => setShowAttachMenu((prev) => !prev)}
                   aria-label="Add attachment"
                   className="text-[#8e8e96] hover:text-white transition-colors p-1 -m-1"
                 >

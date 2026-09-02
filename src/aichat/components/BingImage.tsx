@@ -14,12 +14,48 @@ export function BingImage({ query }: { query: string }) {
     setIndex(0);
     setFailed(false);
 
+    /** Ukur rasio gambar supaya hasil yang dipilih konsisten (tidak jomplang). */
+    const measure = (url: string) =>
+      new Promise<number | null>((resolve) => {
+        const img = new Image();
+        const done = (v: number | null) => resolve(v);
+        img.onload = () => done(img.naturalHeight ? img.naturalWidth / img.naturalHeight : null);
+        img.onerror = () => done(null);
+        img.referrerPolicy = "no-referrer";
+        img.src = url;
+        setTimeout(() => done(null), 6000);
+      });
+
     void (async () => {
       try {
         const res = await fetch(`/api/bingimg?q=${encodeURIComponent(query)}`);
         const data = (await res.json()) as { images?: ImageItem[] };
         if (disposed) return;
-        setItems(data.images ?? []);
+        const all = data.images ?? [];
+        if (all.length === 0) {
+          setItems([]);
+          return;
+        }
+
+        const candidates = all.slice(0, 8);
+        const ratios = await Promise.all(candidates.map((it) => measure(it.url)));
+        if (disposed) return;
+
+        const TARGET = 4 / 3;
+        const valid = candidates
+          .map((it, i) => ({ it, r: ratios[i] }))
+          .filter((x): x is { it: ImageItem; r: number } => typeof x.r === "number" && x.r > 0);
+
+        if (valid.length === 0) {
+          setItems(all);
+          return;
+        }
+
+        valid.sort(
+          (a, b) => Math.abs(Math.log(a.r / TARGET)) - Math.abs(Math.log(b.r / TARGET)),
+        );
+        const rest = all.filter((it) => !valid.some((v) => v.it.url === it.url));
+        setItems([...valid.map((v) => v.it), ...rest]);
       } catch {
         if (!disposed) setFailed(true);
       }
