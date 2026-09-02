@@ -1,15 +1,26 @@
-import { useEffect, useState } from "react";
+import { memo, useEffect, useState } from "react";
 
 type ImageItem = { url: string; title: string };
 
+/** Cache global: hasil pencarian tidak diambil ulang saat komponen dirender ulang. */
+const imageCache = new Map<string, ImageItem[]>();
+
 /** Gambar hasil pencarian Bing, dipakai lewat sintaks [bimg={query}]. */
-export function BingImage({ query }: { query: string }) {
-  const [items, setItems] = useState<ImageItem[] | null>(null);
+function BingImageBase({ query }: { query: string }) {
+  const cached = imageCache.get(query) ?? null;
+  const [items, setItems] = useState<ImageItem[] | null>(cached);
   const [index, setIndex] = useState(0);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     let disposed = false;
+    const hit = imageCache.get(query);
+    if (hit) {
+      setItems(hit);
+      setIndex(0);
+      setFailed(false);
+      return;
+    }
     setItems(null);
     setIndex(0);
     setFailed(false);
@@ -33,6 +44,7 @@ export function BingImage({ query }: { query: string }) {
         if (disposed) return;
         const all = data.images ?? [];
         if (all.length === 0) {
+          imageCache.set(query, []);
           setItems([]);
           return;
         }
@@ -47,6 +59,7 @@ export function BingImage({ query }: { query: string }) {
           .filter((x): x is { it: ImageItem; r: number } => typeof x.r === "number" && x.r > 0);
 
         if (valid.length === 0) {
+          imageCache.set(query, all);
           setItems(all);
           return;
         }
@@ -55,7 +68,9 @@ export function BingImage({ query }: { query: string }) {
           (a, b) => Math.abs(Math.log(a.r / TARGET)) - Math.abs(Math.log(b.r / TARGET)),
         );
         const rest = all.filter((it) => !valid.some((v) => v.it.url === it.url));
-        setItems([...valid.map((v) => v.it), ...rest]);
+        const ordered = [...valid.map((v) => v.it), ...rest];
+        imageCache.set(query, ordered);
+        setItems(ordered);
       } catch {
         if (!disposed) setFailed(true);
       }
@@ -96,5 +111,7 @@ export function BingImage({ query }: { query: string }) {
     </span>
   );
 }
+
+export const BingImage = memo(BingImageBase);
 
 export default BingImage;

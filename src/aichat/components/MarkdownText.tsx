@@ -1,3 +1,4 @@
+import { memo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import remarkMath from "remark-math";
@@ -29,6 +30,12 @@ function SourceChip({
       href={href}
       target="_blank"
       rel="noreferrer"
+      onClick={(e) => {
+        if (!href) return;
+        e.preventDefault();
+        e.stopPropagation();
+        window.open(href, "_blank", "noopener,noreferrer");
+      }}
       className="mx-[3px] inline-flex items-center gap-1 rounded-md bg-source px-[7px] py-[2px] align-[1px] text-[12.5px] font-normal leading-[1.35] tracking-normal text-source-foreground no-underline transition-colors hover:bg-source-hover hover:text-foreground"
     >
       {label}
@@ -84,7 +91,7 @@ function cellClass(node: unknown): string {
 }
 
 
-export function MarkdownText({ text }: { text: string }) {
+function MarkdownTextBase({ text }: { text: string }) {
   const content = normalizeSources(text);
   return (
     <div className="text-[#ececee] text-[16.5px] sm:text-[17.5px] leading-[1.5] font-normal tracking-[-0.01em] break-words [&>*:first-child]:mt-0 [&>*:last-child]:mb-0">
@@ -214,5 +221,7 @@ export function MarkdownText({ text }: { text: string }) {
     </div>
   );
 }
+
+export const MarkdownText = memo(MarkdownTextBase);
 
 export default MarkdownText;

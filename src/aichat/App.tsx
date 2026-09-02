@@ -66,21 +66,9 @@ async function requestAnswer(
 }
 
 export default function App() {
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: "msg-1",
-      role: "user",
-      text: "hi",
-      time: "4:31pm",
-    },
-    {
-      id: "msg-2",
-      role: "assistant",
-      text: "Hello! How’s your day going so far?",
-      time: "4:32pm",
-      thumbState: null,
-    },
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [usedCount, setUsedCount] = useState(0);
+  const [cooldown, setCooldown] = useState(0);
 
   const [activeTooltip, setActiveTooltip] = useState<{
     id: string;
@@ -286,7 +274,7 @@ export default function App() {
 
   const handleSearchSubmit = async (customQuery?: string) => {
     const query = (customQuery ?? inputValue).trim();
-    if (!query || isSending) return;
+    if (!query || isSending || cooldown > 0) return;
 
     const userTime = getFormattedTime();
     const assistantId = `ai-${Date.now() + 1}`;
@@ -319,12 +307,26 @@ export default function App() {
       await runPrompt(query, assistantId);
     } finally {
       setIsSending(false);
+      const next = Math.min(usedCount + 1, 4);
+      setUsedCount(next);
+      if (next >= 4) setCooldown(30);
     }
   };
 
   useEffect(() => {
     streamEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages]);
+
+  // Limit: 4 jawaban, lalu hitung mundur 30 detik sebelum limit di-reset.
+  useEffect(() => {
+    if (cooldown <= 0) return;
+    const timer = setTimeout(() => {
+      const next = cooldown - 1;
+      setCooldown(next);
+      if (next <= 0) setUsedCount(0);
+    }, 1000);
+    return () => clearTimeout(timer);
+  }, [cooldown]);
 
   // Any page-level scroll/resize also invalidates the tooltip anchor.
   useEffect(() => {
