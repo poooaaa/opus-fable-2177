@@ -68,7 +68,9 @@ function BingImageBase({ query }: { query: string }) {
           (a, b) => Math.abs(Math.log(a.r / TARGET)) - Math.abs(Math.log(b.r / TARGET)),
         );
         const rest = all.filter((it) => !valid.some((v) => v.it.url === it.url));
-        setItems([...valid.map((v) => v.it), ...rest]);
+        const ordered = [...valid.map((v) => v.it), ...rest];
+        imageCache.set(query, ordered);
+        setItems(ordered);
       } catch {
         if (!disposed) setFailed(true);
       }
