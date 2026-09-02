@@ -578,7 +578,7 @@ export default function App() {
 
           <div
             id="composer-container-card"
-            className="w-full bg-[#1c1c20] rounded-[22px] px-4 pt-3.5 pb-3 border border-[#27272d]/60 shadow-xl transition-all focus-within:border-[#3a3a44]"
+            className="w-full bg-[#1c1c20] rounded-[22px] px-4 pt-3.5 pb-3 border border-[#27272d]/60 shadow-xl"
           >
             {/* Input field row */}
             <div id="composer-input-row" className="w-full mb-3">
