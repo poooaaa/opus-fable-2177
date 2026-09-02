@@ -307,11 +307,9 @@ export default function App() {
       await runPrompt(query, assistantId);
     } finally {
       setIsSending(false);
-      setUsedCount((prev) => {
-        const next = Math.min(prev + 1, 4);
-        if (next >= 4) setCooldown(30);
-        return next;
-      });
+      const next = Math.min(usedCount + 1, 4);
+      setUsedCount(next);
+      if (next >= 4) setCooldown(30);
     }
   };
 
