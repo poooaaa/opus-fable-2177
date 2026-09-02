@@ -146,6 +146,9 @@ export function MarkdownText({ text }: { text: string }) {
             if (/^\s*(chartjs|echarts|chart):/.test(raw)) {
               return <ChartView code={raw.replace(/^\s*(chartjs|echarts|chart):/, "")} />;
             }
+            if (/^\s*bimg\s*:/.test(raw)) {
+              return <BingImage query={raw.replace(/^\s*bimg\s*:/, "").trim()} />;
+            }
             const isBlock = /language-/.test(className || "") || String(children).includes("\n");
             if (isBlock) {
               return (
@@ -183,18 +186,19 @@ export function MarkdownText({ text }: { text: string }) {
           tbody: ({ children }) => <tbody className="bg-table-body">{children}</tbody>,
           th: ({ children, node }) => (
             <th
-              className={`min-w-[110px] max-w-[330px] border border-table-border px-5 py-4 align-top font-semibold text-foreground whitespace-normal break-words ${alignmentClass(node)}`}
+              className={`border border-table-border px-5 py-4 align-top font-semibold text-foreground ${cellClass(node)} ${alignmentClass(node)}`}
             >
               {children}
             </th>
           ),
           td: ({ children, node }) => (
             <td
-              className={`min-w-[110px] max-w-[330px] border border-table-border px-5 py-4 align-top whitespace-normal break-words ${alignmentClass(node)}`}
+              className={`border border-table-border px-5 py-4 align-top ${cellClass(node)} ${alignmentClass(node)}`}
             >
               {children}
             </td>
           ),
+
           img: ({ src, alt }) => (
             <img
               src={src as string}
