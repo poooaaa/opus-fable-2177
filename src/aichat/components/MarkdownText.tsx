@@ -29,6 +29,12 @@ function SourceChip({
       href={href}
       target="_blank"
       rel="noreferrer"
+      onClick={(e) => {
+        if (!href) return;
+        e.preventDefault();
+        e.stopPropagation();
+        window.open(href, "_blank", "noopener,noreferrer");
+      }}
       className="mx-[3px] inline-flex items-center gap-1 rounded-md bg-source px-[7px] py-[2px] align-[1px] text-[12.5px] font-normal leading-[1.35] tracking-normal text-source-foreground no-underline transition-colors hover:bg-source-hover hover:text-foreground"
     >
       {label}
