@@ -274,7 +274,7 @@ export default function App() {
 
   const handleSearchSubmit = async (customQuery?: string) => {
     const query = (customQuery ?? inputValue).trim();
-    if (!query || isSending) return;
+    if (!query || isSending || cooldown > 0) return;
 
     const userTime = getFormattedTime();
     const assistantId = `ai-${Date.now() + 1}`;
