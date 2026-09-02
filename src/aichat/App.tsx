@@ -318,11 +318,9 @@ export default function App() {
   useEffect(() => {
     if (cooldown <= 0) return;
     const timer = setTimeout(() => {
-      setCooldown((prev) => {
-        const next = prev - 1;
-        if (next <= 0) setUsedCount(0);
-        return next;
-      });
+      const next = cooldown - 1;
+      setCooldown(next);
+      if (next <= 0) setUsedCount(0);
     }, 1000);
     return () => clearTimeout(timer);
   }, [cooldown]);
