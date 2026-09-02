@@ -59,6 +59,7 @@ function BingImageBase({ query }: { query: string }) {
           .filter((x): x is { it: ImageItem; r: number } => typeof x.r === "number" && x.r > 0);
 
         if (valid.length === 0) {
+          imageCache.set(query, all);
           setItems(all);
           return;
         }
