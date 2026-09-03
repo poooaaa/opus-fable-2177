@@ -120,7 +120,10 @@ function BingImageBase({ query }: { query: string }) {
           }}
         />
       ) : (
-        <span className="chat-media-skeleton" />
+        <span className="chat-media-loading">
+          <span className="chat-media-spinner" />
+        </span>
+
       )}
     </span>
   );
