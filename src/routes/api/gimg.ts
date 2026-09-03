@@ -33,6 +33,7 @@ export const Route = createFileRoute("/api/gimg")({
             },
           });
           const html = await res.text();
+          if (new URL(request.url).searchParams.get("debug")) return Response.json({ status: res.status, len: html.length, snippet: html.slice(0, 300) });
           const block = html.match(/var m=(\{.+?\});var a=m/s)?.[1] ?? html;
 
           const seen = new Set<string>();
