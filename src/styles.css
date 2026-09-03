@@ -215,14 +215,33 @@ th.media-cell .chat-media-skeleton {
   border: 1px solid var(--table-border);
 }
 
+.chat-media-loading,
 .chat-media-skeleton {
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 220px;
   height: 150px;
   background: var(--table-body);
   border: 1px solid var(--table-border);
-  animation: avatar-spin 0s;
 }
+
+td.media-cell .chat-media-loading,
+th.media-cell .chat-media-loading {
+  height: 110px;
+  width: 160px;
+}
+
+.chat-media-spinner {
+  display: inline-block;
+  width: 22px;
+  height: 22px;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  border-top-color: #fa520f;
+  border-radius: 9999px;
+  animation: avatar-spin 0.9s linear infinite;
+}
+
 
 
 @layer base {
