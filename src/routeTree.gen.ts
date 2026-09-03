@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiBingimgRouteImport } from './routes/api/bingimg'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
+import { Route as ApiGimgRouteImport } from './routes/api/gimg'
 import { Route as ApiSuggestRouteImport } from './routes/api/suggest'
 
 const IndexRoute = IndexRouteImport.update({
@@ -29,6 +30,11 @@ const ApiChatRoute = ApiChatRouteImport.update({
   path: '/api/chat',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiGimgRoute = ApiGimgRouteImport.update({
+  id: '/api/gimg',
+  path: '/api/gimg',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiSuggestRoute = ApiSuggestRouteImport.update({
   id: '/api/suggest',
   path: '/api/suggest',
@@ -39,12 +45,14 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/api/bingimg': typeof ApiBingimgRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/gimg': typeof ApiGimgRoute
   '/api/suggest': typeof ApiSuggestRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/api/bingimg': typeof ApiBingimgRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/gimg': typeof ApiGimgRoute
   '/api/suggest': typeof ApiSuggestRoute
 }
 export interface FileRoutesById {
@@ -52,20 +60,28 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/api/bingimg': typeof ApiBingimgRoute
   '/api/chat': typeof ApiChatRoute
+  '/api/gimg': typeof ApiGimgRoute
   '/api/suggest': typeof ApiSuggestRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/api/bingimg' | '/api/chat' | '/api/suggest'
+  fullPaths: '/' | '/api/bingimg' | '/api/chat' | '/api/gimg' | '/api/suggest'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/api/bingimg' | '/api/chat' | '/api/suggest'
-  id: '__root__' | '/' | '/api/bingimg' | '/api/chat' | '/api/suggest'
+  to: '/' | '/api/bingimg' | '/api/chat' | '/api/gimg' | '/api/suggest'
+  id:
+    | '__root__'
+    | '/'
+    | '/api/bingimg'
+    | '/api/chat'
+    | '/api/gimg'
+    | '/api/suggest'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ApiBingimgRoute: typeof ApiBingimgRoute
   ApiChatRoute: typeof ApiChatRoute
+  ApiGimgRoute: typeof ApiGimgRoute
   ApiSuggestRoute: typeof ApiSuggestRoute
 }
 
@@ -92,6 +108,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiChatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/gimg': {
+      id: '/api/gimg'
+      path: '/api/gimg'
+      fullPath: '/api/gimg'
+      preLoaderRoute: typeof ApiGimgRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/suggest': {
       id: '/api/suggest'
       path: '/api/suggest'
@@ -106,6 +129,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ApiBingimgRoute: ApiBingimgRoute,
   ApiChatRoute: ApiChatRoute,
+  ApiGimgRoute: ApiGimgRoute,
   ApiSuggestRoute: ApiSuggestRoute,
 }
 export const routeTree = rootRouteImport

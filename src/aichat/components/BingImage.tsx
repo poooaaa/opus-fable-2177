@@ -37,40 +37,53 @@ function BingImageBase({ query }: { query: string }) {
         setTimeout(() => done(null), 6000);
       });
 
+    const TARGET = 4 / 3;
+    const MAX_DEV = 0.3; // toleransi selisih rasio sebelum pindah ke Google Image
+
+    /** Ambil kandidat dari satu endpoint lalu urutkan berdasarkan kedekatan rasio. */
+    const rank = async (endpoint: string) => {
+      const res = await fetch(endpoint);
+      const data = (await res.json()) as { images?: ImageItem[] };
+      const all = data.images ?? [];
+      if (all.length === 0) return { ordered: [] as ImageItem[], best: Infinity };
+
+      const candidates = all.slice(0, 8);
+      const ratios = await Promise.all(candidates.map((it) => measure(it.url)));
+      const valid = candidates
+        .map((it, i) => ({ it, r: ratios[i] }))
+        .filter((x): x is { it: ImageItem; r: number } => typeof x.r === "number" && x.r > 0);
+
+      if (valid.length === 0) return { ordered: all, best: Infinity };
+
+      valid.sort(
+        (a, b) => Math.abs(Math.log(a.r / TARGET)) - Math.abs(Math.log(b.r / TARGET)),
+      );
+      const rest = all.filter((it) => !valid.some((v) => v.it.url === it.url));
+      const bestEntry = valid[0]!;
+      return {
+        ordered: [...valid.map((v) => v.it), ...rest],
+        best: Math.abs(Math.log(bestEntry.r / TARGET)),
+      };
+    };
+
     void (async () => {
       try {
-        const res = await fetch(`/api/bingimg?q=${encodeURIComponent(query)}`);
-        const data = (await res.json()) as { images?: ImageItem[] };
-        if (disposed) return;
-        const all = data.images ?? [];
-        if (all.length === 0) {
-          imageCache.set(query, []);
-          setItems([]);
-          return;
-        }
-
-        const candidates = all.slice(0, 8);
-        const ratios = await Promise.all(candidates.map((it) => measure(it.url)));
+        const primary = await rank(`/api/bingimg?q=${encodeURIComponent(query)}`);
         if (disposed) return;
 
-        const TARGET = 4 / 3;
-        const valid = candidates
-          .map((it, i) => ({ it, r: ratios[i] }))
-          .filter((x): x is { it: ImageItem; r: number } => typeof x.r === "number" && x.r > 0);
-
-        if (valid.length === 0) {
-          imageCache.set(query, all);
-          setItems(all);
-          return;
+        let chosen = primary;
+        if (primary.best > MAX_DEV) {
+          try {
+            const fallback = await rank(`/api/gimg?q=${encodeURIComponent(query)}`);
+            if (disposed) return;
+            if (fallback.ordered.length > 0 && fallback.best < primary.best) chosen = fallback;
+          } catch {
+            // Cadangan gagal: tetap pakai hasil terdekat dari Bing.
+          }
         }
 
-        valid.sort(
-          (a, b) => Math.abs(Math.log(a.r / TARGET)) - Math.abs(Math.log(b.r / TARGET)),
-        );
-        const rest = all.filter((it) => !valid.some((v) => v.it.url === it.url));
-        const ordered = [...valid.map((v) => v.it), ...rest];
-        imageCache.set(query, ordered);
-        setItems(ordered);
+        imageCache.set(query, chosen.ordered);
+        setItems(chosen.ordered);
       } catch {
         if (!disposed) setFailed(true);
       }
@@ -80,6 +93,7 @@ function BingImageBase({ query }: { query: string }) {
       disposed = true;
     };
   }, [query]);
+
 
   if (failed || (items && items.length === 0)) {
     return (
