@@ -28,12 +28,13 @@ export const Route = createFileRoute("/api/gimg")({
               accept:
                 "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
               cookie: `NID=${NID}`,
+              "accept-language": "en-US,en;q=0.9",
               "User-Agent":
                 "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/151.0.0.0 Safari/537.36",
             },
           });
           const html = await res.text();
-          if (new URL(request.url).searchParams.get("debug")) return Response.json({ status: res.status, len: html.length, snippet: html.slice(0, 300) });
+          if (new URL(request.url).searchParams.get("debug")) return Response.json({ status: res.status, len: html.length, snippet: html.slice(0, 300), hasNid: html.includes("consent"), tail: html.slice(-300) });
           const block = html.match(/var m=(\{.+?\});var a=m/s)?.[1] ?? html;
 
           const seen = new Set<string>();
