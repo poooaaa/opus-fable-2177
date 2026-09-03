@@ -355,7 +355,23 @@ export default function App() {
           id="conversation-stream"
           className="flex-1 flex flex-col justify-start w-full overflow-y-auto max-h-[calc(100vh-140px)] pr-0.5 no-scrollbar"
         >
+          {messages.length === 0 && (
+            <div
+              id="chat-empty-state"
+              className="flex-1 flex flex-col items-center justify-start pt-[22vh] select-none"
+            >
+              <img
+                src={aiAvatar}
+                alt="AI avatar"
+                className="h-[46px] w-[46px] rounded-[12px] object-cover"
+              />
+              <p className="mt-5 text-[17px] text-[#b6b6bd] font-normal text-center">
+                Hello! How’s your day going so far?
+              </p>
+            </div>
+          )}
           {messages.map((msg) => {
+
             if (msg.role === "user") {
               return (
                 <div
@@ -624,15 +640,18 @@ export default function App() {
                   <Plus size={20} strokeWidth={2} />
                 </button>
 
-                {/* Context badge: Project icon with 1/4 */}
+                {/* Context badge: pemakaian / limit, berubah jadi hitung mundur saat cooldown */}
                 <div
                   id="project-counter-badge"
                   className="flex items-center gap-1.5 text-[#8e8e96] hover:text-[#c4c4cc] transition-colors cursor-pointer"
-                  title="Context files used (1 of 4)"
+                  title={cooldown > 0 ? `Tunggu ${cooldown} detik` : `Terpakai ${usedCount} dari 4`}
                 >
                   <ProjectContextIcon size={16} className="text-[#8e8e96]" />
-                  <span className="text-[13.5px] font-medium tracking-tight">1/4</span>
+                  <span className="text-[13.5px] font-medium tracking-tight">
+                    {cooldown > 0 ? `${cooldown}s` : `${usedCount}/4`}
+                  </span>
                 </div>
+
 
                 {/* Attach Popup Menu */}
                 {showAttachMenu && (

@@ -226,9 +226,11 @@ Aturan format jawaban:
 1. Tulis semua rumus/matematika dengan LaTeX: inline pakai $...$ dan blok pakai $$...$$ (jangan pakai \\( \\) atau \\[ \\]).
 2. WAJIB: setiap kali informasi berasal dari web search, sisipkan semua sitasi di AKHIR setiap paragraf/poin sebagai markdown link yang teksnya HANYA nama domain atau akronim media, contoh: [apnews.com](https://apnews.com/article/xxx) atau [AFP](https://www.afp.com). Sitasi menggantikan tanda baca penutup, jadi jangan tambahkan titik setelah sitasi. Setiap paragraf faktual harus punya minimal satu sitasi.
 3. Jangan tulis URL mentah, jangan buat daftar "Sumber:" terpisah di akhir jawaban, dan jangan tambahkan pemisah "---" setelah sitasi.
-4. Buat grafik HANYA jika benar-benar membantu. Gunakan Chart.js: blok kode berbahasa chartjs (\`\`\`chartjs) berisi HANYA satu objek JSON konfigurasi Chart.js valid, mis. {"type":"bar","data":{"labels":["A","B"],"datasets":[{"label":"X","data":[1,2]}]}}. Tanpa komentar/fungsi/variabel. Untuk grafik di dalam sel tabel, pakai inline code satu baris: \`chartjs:{...}\`.
-5. Jika membuat tabel, gunakan tabel Markdown GFM. Tentukan perataan setiap kolom melalui baris pemisah: :--- untuk kiri, :---: untuk tengah, dan ---: untuk kanan. Buat isi sel ringkas agar mudah dibaca di layar kecil.
-6. Jika gambar membantu penjelasan, sisipkan pencarian gambar dengan sintaks [bimg={kata kunci}], contoh: [bimg={toyota supra 2024}]. Sintaks ini juga boleh dipakai di dalam sel tabel. Gunakan maksimal beberapa gambar dan jangan pakai URL gambar mentah.]\n\n${prompt}`,
+4. Kamu bebas memutuskan sendiri apakah jawaban perlu tabel, grafik, atau gambar — pakai hanya jika benar-benar membantu pemahaman, jangan dipaksakan.
+5. Grafik (opsional): blok kode berbahasa chartjs (\`\`\`chartjs) berisi HANYA satu objek JSON konfigurasi Chart.js valid, mis. {"type":"bar","data":{"labels":["A","B"],"datasets":[{"label":"X","data":[1,2]}]}}. Tanpa komentar/fungsi/variabel. Untuk grafik di dalam sel tabel, pakai inline code satu baris: \`chartjs:{...}\`.
+6. Tabel (opsional): gunakan tabel Markdown GFM. Tentukan perataan tiap kolom lewat baris pemisah: :--- kiri, :---: tengah, ---: kanan. Isi sel ringkas agar mudah dibaca di layar kecil.
+7. Gambar (opsional): sisipkan dengan sintaks [bimg={kata kunci}], contoh: [bimg={albert einstein}]. Boleh diletakkan di mana saja dalam jawaban (tidak harus di akhir) dan boleh di dalam sel tabel. Maksimal beberapa gambar, jangan pakai URL gambar mentah.]\n\n${prompt}`,
+
 
         },
       ],
