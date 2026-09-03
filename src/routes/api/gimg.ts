@@ -27,6 +27,7 @@ export const Route = createFileRoute("/api/gimg")({
             headers: {
               accept:
                 "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+              "accept-encoding": "gzip",
               cookie: `NID=${NID}`,
               "accept-language": "en-US,en;q=0.9",
               "sec-ch-ua": '"Chromium";v="151", "Not.A/Brand";v="24"',
@@ -42,7 +43,6 @@ export const Route = createFileRoute("/api/gimg")({
             },
           });
           const html = await res.text();
-          if (new URL(request.url).searchParams.get("debug")) return Response.json({ status: res.status, len: html.length, snippet: html.slice(0, 300), hasNid: html.includes("consent"), tail: html.slice(-300) });
           const block = html.match(/var m=(\{.+?\});var a=m/s)?.[1] ?? html;
 
           const seen = new Set<string>();
