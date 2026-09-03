@@ -355,7 +355,23 @@ export default function App() {
           id="conversation-stream"
           className="flex-1 flex flex-col justify-start w-full overflow-y-auto max-h-[calc(100vh-140px)] pr-0.5 no-scrollbar"
         >
+          {messages.length === 0 && (
+            <div
+              id="chat-empty-state"
+              className="flex-1 flex flex-col items-center justify-start pt-[22vh] select-none"
+            >
+              <img
+                src={aiAvatar}
+                alt="AI avatar"
+                className="h-[46px] w-[46px] rounded-[12px] object-cover"
+              />
+              <p className="mt-5 text-[17px] text-[#b6b6bd] font-normal text-center">
+                Hello! How’s your day going so far?
+              </p>
+            </div>
+          )}
           {messages.map((msg) => {
+
             if (msg.role === "user") {
               return (
                 <div
