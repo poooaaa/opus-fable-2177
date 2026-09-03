@@ -37,14 +37,21 @@ export const Route = createFileRoute("/api/gimg")({
 
           const seen = new Set<string>();
           const images: Array<{ url: string; title: string }> = [];
-          for (const match of block.matchAll(/"(https?:\/\/[^"\\]+?\.(?:jpg|jpeg|png|webp)[^"\\]*)"/gi)) {
-            const link = match[1];
-            if (!link || seen.has(link)) continue;
-            if (link.includes("gstatic.com") || link.includes("google.com")) continue;
-            seen.add(link);
-            images.push({ url: link, title: q });
-            if (images.length >= 10) break;
-          }
+          const collect = (source: string) => {
+            for (const match of source.matchAll(
+              /"(https?:\/\/[^"\\]+?\.(?:jpg|jpeg|png|webp)[^"\\]*)"/gi,
+            )) {
+              const link = match[1];
+              if (!link || seen.has(link)) continue;
+              if (link.includes("gstatic.com") || link.includes("google.com")) continue;
+              seen.add(link);
+              images.push({ url: link, title: q });
+              if (images.length >= 10) return;
+            }
+          };
+          collect(block);
+          if (images.length === 0) collect(html);
+
 
           return Response.json(
             { images },
