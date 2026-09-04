@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { fetchWeather, type WeatherDay } from "./weather";
 
 const BASE_HEADERS: Record<string, string> = {
   "User-Agent":
@@ -340,7 +341,7 @@ export const Route = createFileRoute("/api/chat")({
               const snap = await fetchWeather(city);
               if (snap) {
                 const days = snap.days
-                  .map((d) => `${d.day}: ${d.temp} (${d.alt})`)
+                  .map((d: WeatherDay) => `${d.day}: ${d.temp} (${d.alt})`)
                   .join("; ");
                 weatherContext =
                   `\n\n[DATA CUACA (sumber resmi, wajib dipakai apa adanya) — kota: ${snap.city}; ` +
