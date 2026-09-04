@@ -195,11 +195,29 @@ function renderRefs(text: string, refs: Map<string, string>): string {
     .replace(/(\[[^\]]+\]\([^\n]+?\))\s*[.!?](?=\s*(?:\n|$))/gm, "$1");
 }
 
+/** Deteksi pertanyaan cuaca lalu tebak nama kotanya. */
+function detectWeatherCity(prompt: string): string | null {
+  if (!/\b(cuaca|weather|ramalan cuaca|prakiraan|suhu udara)\b/i.test(prompt)) return null;
+  const stop = new Set([
+    "cuaca","weather","ramalan","prakiraan","suhu","udara","di","kota","hari","ini","besok",
+    "sekarang","bagaimana","gimana","apa","berapa","tolong","kasih","tau","tahu","dong","ya",
+    "yang","untuk","dan","the","in","of","is","what","how","today","tomorrow","forecast","and",
+  ]);
+  const words = prompt
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .split(/\s+/)
+    .filter((w) => w && !stop.has(w.toLowerCase()));
+  const city = words.join(" ").trim();
+  return city ? city.slice(0, 60) : null;
+}
+
 async function streamAnswer(
   prompt: string,
   auth: Auth,
   chatId: string | null,
+  weatherContext = "",
 ): Promise<{ response: string; chatId: string | null }> {
+
   const res = await fetch("https://chat.mistral.ai/api/chat", {
     method: "POST",
     headers: {
