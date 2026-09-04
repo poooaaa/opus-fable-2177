@@ -5,6 +5,8 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import { ChartView } from "./ChartView";
 import { BingImage } from "./BingImage";
+import { WeatherCard, WeatherForecast } from "./WeatherCard";
+
 
 
 /** Sumber ditampilkan sebagai chip kecil (mis. "apnews.com", "AFP"). */
