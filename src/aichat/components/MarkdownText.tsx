@@ -50,6 +50,9 @@ function SourceChip({
 function normalizeSources(input: string): string {
   return input
     .replace(/\[bimg=\{([^}]+)\}\]/g, (_m, q: string) => `\`bimg:${q.trim()}\``)
+    .replace(/\[cuaca=\{([^}]+)\}\]/g, (_m, q: string) => `\n\n\`cuaca:${q.trim()}\`\n\n`)
+    .replace(/\[ramalan=\{([^}]+)\}\]/g, (_m, q: string) => `\n\n\`ramalan:${q.trim()}\`\n\n`)
+
     .replace(/\\\((.+?)\\\)/gs, (_m, m1) => `$${m1}$`)
     .replace(/\\\[(.+?)\\\]/gs, (_m, m1) => `$$${m1}$$`)
     .replace(/(^|[\s(])(https?:\/\/([^\s)>\]]+))/g, (_m, pre: string, url: string) => {
