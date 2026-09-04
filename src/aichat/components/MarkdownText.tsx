@@ -161,6 +161,13 @@ function MarkdownTextBase({ text }: { text: string }) {
             if (/^\s*bimg\s*:/.test(raw)) {
               return <BingImage query={raw.replace(/^\s*bimg\s*:/, "").trim()} />;
             }
+            if (/^\s*cuaca\s*:/.test(raw)) {
+              return <WeatherCard query={raw.replace(/^\s*cuaca\s*:/, "").trim()} />;
+            }
+            if (/^\s*ramalan\s*:/.test(raw)) {
+              return <WeatherForecast query={raw.replace(/^\s*ramalan\s*:/, "").trim()} />;
+            }
+
             const isBlock = /language-/.test(className || "") || String(children).includes("\n");
             if (isBlock) {
               return (
