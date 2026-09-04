@@ -5,6 +5,8 @@ import remarkMath from "remark-math";
 import rehypeKatex from "rehype-katex";
 import { ChartView } from "./ChartView";
 import { BingImage } from "./BingImage";
+import { WeatherCard, WeatherForecast } from "./WeatherCard";
+
 
 
 /** Sumber ditampilkan sebagai chip kecil (mis. "apnews.com", "AFP"). */
@@ -48,6 +50,9 @@ function SourceChip({
 function normalizeSources(input: string): string {
   return input
     .replace(/\[bimg=\{([^}]+)\}\]/g, (_m, q: string) => `\`bimg:${q.trim()}\``)
+    .replace(/\[cuaca=\{([^}]+)\}\]/g, (_m, q: string) => `\n\n\`cuaca:${q.trim()}\`\n\n`)
+    .replace(/\[ramalan=\{([^}]+)\}\]/g, (_m, q: string) => `\n\n\`ramalan:${q.trim()}\`\n\n`)
+
     .replace(/\\\((.+?)\\\)/gs, (_m, m1) => `$${m1}$`)
     .replace(/\\\[(.+?)\\\]/gs, (_m, m1) => `$$${m1}$$`)
     .replace(/(^|[\s(])(https?:\/\/([^\s)>\]]+))/g, (_m, pre: string, url: string) => {
@@ -156,6 +161,13 @@ function MarkdownTextBase({ text }: { text: string }) {
             if (/^\s*bimg\s*:/.test(raw)) {
               return <BingImage query={raw.replace(/^\s*bimg\s*:/, "").trim()} />;
             }
+            if (/^\s*cuaca\s*:/.test(raw)) {
+              return <WeatherCard query={raw.replace(/^\s*cuaca\s*:/, "").trim()} />;
+            }
+            if (/^\s*ramalan\s*:/.test(raw)) {
+              return <WeatherForecast query={raw.replace(/^\s*ramalan\s*:/, "").trim()} />;
+            }
+
             const isBlock = /language-/.test(className || "") || String(children).includes("\n");
             if (isBlock) {
               return (

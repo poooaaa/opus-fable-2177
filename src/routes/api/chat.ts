@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { fetchWeather, type WeatherDay } from "./weather";
 
 const BASE_HEADERS: Record<string, string> = {
   "User-Agent":
@@ -195,11 +196,29 @@ function renderRefs(text: string, refs: Map<string, string>): string {
     .replace(/(\[[^\]]+\]\([^\n]+?\))\s*[.!?](?=\s*(?:\n|$))/gm, "$1");
 }
 
+/** Deteksi pertanyaan cuaca lalu tebak nama kotanya. */
+function detectWeatherCity(prompt: string): string | null {
+  if (!/\b(cuaca|weather|ramalan cuaca|prakiraan|suhu udara)\b/i.test(prompt)) return null;
+  const stop = new Set([
+    "cuaca","weather","ramalan","prakiraan","suhu","udara","di","kota","hari","ini","besok",
+    "sekarang","bagaimana","gimana","apa","berapa","tolong","kasih","tau","tahu","dong","ya",
+    "yang","untuk","dan","the","in","of","is","what","how","today","tomorrow","forecast","and",
+  ]);
+  const words = prompt
+    .replace(/[^\p{L}\p{N}\s]/gu, " ")
+    .split(/\s+/)
+    .filter((w) => w && !stop.has(w.toLowerCase()));
+  const city = words.join(" ").trim();
+  return city ? city.slice(0, 60) : null;
+}
+
 async function streamAnswer(
   prompt: string,
   auth: Auth,
   chatId: string | null,
+  weatherContext = "",
 ): Promise<{ response: string; chatId: string | null }> {
+
   const res = await fetch("https://chat.mistral.ai/api/chat", {
     method: "POST",
     headers: {
@@ -229,7 +248,9 @@ Aturan format jawaban:
 4. Kamu bebas memutuskan sendiri apakah jawaban perlu tabel atau grafik — pakai hanya jika benar-benar membantu pemahaman. Namun untuk GAMBAR, bersikaplah agresif: hampir semua topik yang punya wujud/rupa visual wajib disertai gambar.
 5. Grafik (opsional): blok kode berbahasa chartjs (\`\`\`chartjs) berisi HANYA satu objek JSON konfigurasi Chart.js valid, mis. {"type":"bar","data":{"labels":["A","B"],"datasets":[{"label":"X","data":[1,2]}]}}. Tanpa komentar/fungsi/variabel. Untuk grafik di dalam sel tabel, pakai inline code satu baris: \`chartjs:{...}\`.
 6. Tabel (opsional): gunakan tabel Markdown GFM. Tentukan perataan tiap kolom lewat baris pemisah: :--- kiri, :---: tengah, ---: kanan. Isi sel ringkas agar mudah dibaca di layar kecil.
-7. Gambar (SANGAT DIANJURKAN): sisipkan dengan sintaks [bimg={kata kunci}], contoh: [bimg={albert einstein}]. Sertakan gambar setiap kali topik bisa dilihat wujudnya: benda, orang, tempat, hewan, tumbuhan, produk, bangunan, model/diagram ilmiah (mis. "bentuk atom Dalton" → [bimg={dalton atomic model}]), peristiwa, karya seni, makanan, kendaraan, logo, dsb. Jika pertanyaan mengandung kata seperti bentuk, rupa, wujud, gambar, foto, seperti apa, model, struktur, diagram, contoh — gambar WAJIB ada. Letakkan gambar dekat bagian teks yang menjelaskannya (tidak harus di akhir), boleh juga di dalam sel tabel. Gunakan 1-3 gambar (boleh lebih bila membandingkan beberapa hal), kata kunci pencarian sebaiknya bahasa Inggris dan spesifik. Jangan pakai URL gambar mentah. Hanya lewatkan gambar untuk topik yang benar-benar abstrak (mis. definisi matematis murni, kode, saran menulis).]\n\n${prompt}`,
+7. Gambar (SANGAT DIANJURKAN): sisipkan dengan sintaks [bimg={kata kunci}], contoh: [bimg={albert einstein}]. Sertakan gambar setiap kali topik bisa dilihat wujudnya: benda, orang, tempat, hewan, tumbuhan, produk, bangunan, model/diagram ilmiah (mis. "bentuk atom Dalton" → [bimg={dalton atomic model}]), peristiwa, karya seni, makanan, kendaraan, logo, dsb. Jika pertanyaan mengandung kata seperti bentuk, rupa, wujud, gambar, foto, seperti apa, model, struktur, diagram, contoh — gambar WAJIB ada. Letakkan gambar dekat bagian teks yang menjelaskannya (tidak harus di akhir), boleh juga di dalam sel tabel. Gunakan 1-3 gambar (boleh lebih bila membandingkan beberapa hal), kata kunci pencarian sebaiknya bahasa Inggris dan spesifik. Jangan pakai URL gambar mentah. Hanya lewatkan gambar untuk topik yang benar-benar abstrak (mis. definisi matematis murni, kode, saran menulis).
+8. Cuaca: hanya jika tersedia blok DATA CUACA di bawah. Ada dua kartu terpisah dan bebas posisinya (boleh salah satu saja, tidak harus berdempetan): [cuaca={nama kota}] untuk kartu cuaca utama dan [ramalan={nama kota}] untuk ramalan 5 hari. Tulis nama kota persis seperti pada DATA CUACA. Kartu cuaca TIDAK BOLEH diletakkan di dalam tabel, dan harus berdiri sendiri di barisnya. Semua angka/kondisi yang kamu sebutkan dalam teks WAJIB sama persis dengan DATA CUACA (jangan pakai angka dari web search).]${weatherContext}\n\n${prompt}`,
+
 
 
 
@@ -313,7 +334,28 @@ export const Route = createFileRoute("/api/chat")({
           const auth = incomingAuth?.cookie && incomingAuth?.id ? incomingAuth : await getSession();
 
           const activeChatId = chatId ?? (await createChat(prompt, auth));
-          const result = await streamAnswer(prompt, auth, activeChatId);
+          let weatherContext = "";
+          const city = detectWeatherCity(prompt);
+          if (city) {
+            try {
+              const snap = await fetchWeather(city);
+              if (snap) {
+                const days = snap.days
+                  .map((d: WeatherDay) => `${d.day}: ${d.temp} (${d.alt})`)
+                  .join("; ");
+                weatherContext =
+                  `\n\n[DATA CUACA (sumber resmi, wajib dipakai apa adanya) — kota: ${snap.city}; ` +
+                  `suhu saat ini: ${snap.temp}; kondisi: ${snap.alt}; ${snap.meta.join("; ")}` +
+                  (days ? `; ramalan 5 hari: ${days}` : "") +
+                  `]`;
+              }
+            } catch {
+              // Data cuaca gagal diambil: jawab tanpa kartu cuaca.
+            }
+          }
+
+          const result = await streamAnswer(prompt, auth, activeChatId, weatherContext);
+
 
           if (!result.response) {
             return Response.json(
