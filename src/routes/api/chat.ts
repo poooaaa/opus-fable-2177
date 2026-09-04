@@ -333,7 +333,28 @@ export const Route = createFileRoute("/api/chat")({
           const auth = incomingAuth?.cookie && incomingAuth?.id ? incomingAuth : await getSession();
 
           const activeChatId = chatId ?? (await createChat(prompt, auth));
-          const result = await streamAnswer(prompt, auth, activeChatId);
+          let weatherContext = "";
+          const city = detectWeatherCity(prompt);
+          if (city) {
+            try {
+              const snap = await fetchWeather(city);
+              if (snap) {
+                const days = snap.days
+                  .map((d) => `${d.day}: ${d.temp} (${d.alt})`)
+                  .join("; ");
+                weatherContext =
+                  `\n\n[DATA CUACA (sumber resmi, wajib dipakai apa adanya) — kota: ${snap.city}; ` +
+                  `suhu saat ini: ${snap.temp}; kondisi: ${snap.alt}; ${snap.meta.join("; ")}` +
+                  (days ? `; ramalan 5 hari: ${days}` : "") +
+                  `]`;
+              }
+            } catch {
+              // Data cuaca gagal diambil: jawab tanpa kartu cuaca.
+            }
+          }
+
+          const result = await streamAnswer(prompt, auth, activeChatId, weatherContext);
+
 
           if (!result.response) {
             return Response.json(
