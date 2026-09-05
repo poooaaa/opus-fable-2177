@@ -15,10 +15,30 @@ export function prefetchMusic(query: string): Promise<MusicTrack | "empty"> {
     try {
       const res = await fetch(`/api/music?q=${encodeURIComponent(query)}`);
       const data = (await res.json()) as { track?: MusicTrack | null };
-      return data.track && data.track.id ? data.track : ("empty" as const);
+      if (data.track && data.track.id) return data.track;
     } catch {
-      return "empty" as const;
+      // Lanjut ke percobaan langsung dari browser.
     }
+    try {
+      const res = await fetch(
+        `https://merajah.xyz/music/search?q=${encodeURIComponent(query)}`,
+      );
+      const raw = (await res.json()) as {
+        data?: { songs?: Array<Partial<MusicTrack> & { id?: string }> };
+      };
+      const first = raw.data?.songs?.find((s) => s.id);
+      if (first?.id) {
+        return {
+          id: first.id,
+          title: first.title ?? query,
+          artist: first.artist ?? "",
+          thumbnail: first.thumbnail ?? "",
+        };
+      }
+    } catch {
+      // Tidak ada hasil.
+    }
+    return "empty" as const;
   })().then((value) => {
     cache.set(query, value);
     pending.delete(query);
