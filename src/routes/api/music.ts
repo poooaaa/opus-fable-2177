@@ -18,7 +18,12 @@ type RawSong = {
 /** Cari lagu di endpoint musik, ambil hasil terbaik. */
 export async function fetchMusic(query: string): Promise<MusicTrack | null> {
   const res = await fetch(`https://merajah.xyz/music/search?q=${encodeURIComponent(query)}`, {
-    headers: { Accept: "application/json" },
+    headers: {
+      Accept: "application/json, text/plain, */*",
+      "User-Agent":
+        "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0 Safari/537.36",
+      "Accept-Language": "en-US,en;q=0.9",
+    },
   });
   if (!res.ok) return null;
   const data = (await res.json()) as {
