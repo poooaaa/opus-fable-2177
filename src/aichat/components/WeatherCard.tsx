@@ -4,7 +4,9 @@ import type { WeatherSnapshot } from "@/routes/api/weather";
 const cache = new Map<string, WeatherSnapshot | "empty">();
 const pending = new Map<string, Promise<WeatherSnapshot | "empty">>();
 
-function load(query: string): Promise<WeatherSnapshot | "empty"> {
+export function prefetchWeather(query: string): Promise<WeatherSnapshot | "empty"> {
+  const cached = cache.get(query);
+  if (cached) return Promise.resolve(cached);
   const hit = pending.get(query);
   if (hit) return hit;
   const task = (async () => {
@@ -35,7 +37,7 @@ function useWeather(query: string) {
     }
     let disposed = false;
     setData(null);
-    void load(query).then((value) => {
+    void prefetchWeather(query).then((value) => {
       if (!disposed) setData(value);
     });
     return () => {

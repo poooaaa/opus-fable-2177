@@ -13,6 +13,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as ApiBingimgRouteImport } from './routes/api/bingimg'
 import { Route as ApiChatRouteImport } from './routes/api/chat'
 import { Route as ApiGimgRouteImport } from './routes/api/gimg'
+import { Route as ApiMusicRouteImport } from './routes/api/music'
 import { Route as ApiSuggestRouteImport } from './routes/api/suggest'
 import { Route as ApiWeatherRouteImport } from './routes/api/weather'
 
@@ -36,6 +37,11 @@ const ApiGimgRoute = ApiGimgRouteImport.update({
   path: '/api/gimg',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiMusicRoute = ApiMusicRouteImport.update({
+  id: '/api/music',
+  path: '/api/music',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiSuggestRoute = ApiSuggestRouteImport.update({
   id: '/api/suggest',
   path: '/api/suggest',
@@ -52,6 +58,7 @@ export interface FileRoutesByFullPath {
   '/api/bingimg': typeof ApiBingimgRoute
   '/api/chat': typeof ApiChatRoute
   '/api/gimg': typeof ApiGimgRoute
+  '/api/music': typeof ApiMusicRoute
   '/api/suggest': typeof ApiSuggestRoute
   '/api/weather': typeof ApiWeatherRoute
 }
@@ -60,6 +67,7 @@ export interface FileRoutesByTo {
   '/api/bingimg': typeof ApiBingimgRoute
   '/api/chat': typeof ApiChatRoute
   '/api/gimg': typeof ApiGimgRoute
+  '/api/music': typeof ApiMusicRoute
   '/api/suggest': typeof ApiSuggestRoute
   '/api/weather': typeof ApiWeatherRoute
 }
@@ -69,6 +77,7 @@ export interface FileRoutesById {
   '/api/bingimg': typeof ApiBingimgRoute
   '/api/chat': typeof ApiChatRoute
   '/api/gimg': typeof ApiGimgRoute
+  '/api/music': typeof ApiMusicRoute
   '/api/suggest': typeof ApiSuggestRoute
   '/api/weather': typeof ApiWeatherRoute
 }
@@ -79,6 +88,7 @@ export interface FileRouteTypes {
     | '/api/bingimg'
     | '/api/chat'
     | '/api/gimg'
+    | '/api/music'
     | '/api/suggest'
     | '/api/weather'
   fileRoutesByTo: FileRoutesByTo
@@ -87,6 +97,7 @@ export interface FileRouteTypes {
     | '/api/bingimg'
     | '/api/chat'
     | '/api/gimg'
+    | '/api/music'
     | '/api/suggest'
     | '/api/weather'
   id:
@@ -95,6 +106,7 @@ export interface FileRouteTypes {
     | '/api/bingimg'
     | '/api/chat'
     | '/api/gimg'
+    | '/api/music'
     | '/api/suggest'
     | '/api/weather'
   fileRoutesById: FileRoutesById
@@ -104,6 +116,7 @@ export interface RootRouteChildren {
   ApiBingimgRoute: typeof ApiBingimgRoute
   ApiChatRoute: typeof ApiChatRoute
   ApiGimgRoute: typeof ApiGimgRoute
+  ApiMusicRoute: typeof ApiMusicRoute
   ApiSuggestRoute: typeof ApiSuggestRoute
   ApiWeatherRoute: typeof ApiWeatherRoute
 }
@@ -138,6 +151,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiGimgRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/music': {
+      id: '/api/music'
+      path: '/api/music'
+      fullPath: '/api/music'
+      preLoaderRoute: typeof ApiMusicRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/suggest': {
       id: '/api/suggest'
       path: '/api/suggest'
@@ -160,6 +180,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiBingimgRoute: ApiBingimgRoute,
   ApiChatRoute: ApiChatRoute,
   ApiGimgRoute: ApiGimgRoute,
+  ApiMusicRoute: ApiMusicRoute,
   ApiSuggestRoute: ApiSuggestRoute,
   ApiWeatherRoute: ApiWeatherRoute,
 }

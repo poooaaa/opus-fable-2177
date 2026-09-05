@@ -17,6 +17,25 @@ import { ProjectContextIcon } from "./components/ProjectIcon";
 import { MarkdownText } from "./components/MarkdownText";
 import { ClaudeCopyIcon } from "./components/CopyIcon";
 import aiAvatar from "@/assets/ai-avatar.png";
+import { prefetchImage } from "./components/BingImage";
+import { prefetchWeather } from "./components/WeatherCard";
+import { prefetchMusic } from "./components/MusicCard";
+
+/** Pramuat semua media dalam jawaban supaya tampil utuh tanpa kedip loading. */
+async function preloadMedia(answer: string): Promise<void> {
+  const jobs: Promise<unknown>[] = [];
+  for (const m of answer.matchAll(/\[bimg=\{([^}]+)\}\]/g)) jobs.push(prefetchImage(m[1]!.trim()));
+  for (const m of answer.matchAll(/\[cuaca=\{([^}]+)\}\]/g)) jobs.push(prefetchWeather(m[1]!.trim()));
+  for (const m of answer.matchAll(/\[ramalan=\{([^}]+)\}\]/g))
+    jobs.push(prefetchWeather(m[1]!.trim()));
+  for (const m of answer.matchAll(/\[(?:musik|music|lagu)=\{([^}]+)\}\]/g))
+    jobs.push(prefetchMusic(m[1]!.trim()));
+  if (jobs.length === 0) return;
+  await Promise.race([
+    Promise.allSettled(jobs),
+    new Promise((resolve) => setTimeout(resolve, 15000)),
+  ]);
+}
 
 interface Message {
   id: string;
@@ -204,6 +223,7 @@ export default function App() {
       if (data.auth) authRef.current = data.auth;
       if (data.chatId) chatIdRef.current = data.chatId;
       const answer = data.response?.trim();
+      if (answer) await preloadMedia(answer);
       setMessages((prev) =>
         prev.map((msg) =>
           msg.id === targetMsgId

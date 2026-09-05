@@ -249,7 +249,9 @@ Aturan format jawaban:
 5. Grafik (opsional): blok kode berbahasa chartjs (\`\`\`chartjs) berisi HANYA satu objek JSON konfigurasi Chart.js valid, mis. {"type":"bar","data":{"labels":["A","B"],"datasets":[{"label":"X","data":[1,2]}]}}. Tanpa komentar/fungsi/variabel. Untuk grafik di dalam sel tabel, pakai inline code satu baris: \`chartjs:{...}\`.
 6. Tabel (opsional): gunakan tabel Markdown GFM. Tentukan perataan tiap kolom lewat baris pemisah: :--- kiri, :---: tengah, ---: kanan. Isi sel ringkas agar mudah dibaca di layar kecil.
 7. Gambar (SANGAT DIANJURKAN): sisipkan dengan sintaks [bimg={kata kunci}], contoh: [bimg={albert einstein}]. Sertakan gambar setiap kali topik bisa dilihat wujudnya: benda, orang, tempat, hewan, tumbuhan, produk, bangunan, model/diagram ilmiah (mis. "bentuk atom Dalton" → [bimg={dalton atomic model}]), peristiwa, karya seni, makanan, kendaraan, logo, dsb. Jika pertanyaan mengandung kata seperti bentuk, rupa, wujud, gambar, foto, seperti apa, model, struktur, diagram, contoh — gambar WAJIB ada. Letakkan gambar dekat bagian teks yang menjelaskannya (tidak harus di akhir), boleh juga di dalam sel tabel. Gunakan 1-3 gambar (boleh lebih bila membandingkan beberapa hal), kata kunci pencarian sebaiknya bahasa Inggris dan spesifik. Jangan pakai URL gambar mentah. Hanya lewatkan gambar untuk topik yang benar-benar abstrak (mis. definisi matematis murni, kode, saran menulis).
-8. Cuaca: hanya jika tersedia blok DATA CUACA di bawah. Ada dua kartu terpisah dan bebas posisinya (boleh salah satu saja, tidak harus berdempetan): [cuaca={nama kota}] untuk kartu cuaca utama dan [ramalan={nama kota}] untuk ramalan 5 hari. Tulis nama kota persis seperti pada DATA CUACA. Kartu cuaca TIDAK BOLEH diletakkan di dalam tabel, dan harus berdiri sendiri di barisnya. Semua angka/kondisi yang kamu sebutkan dalam teks WAJIB sama persis dengan DATA CUACA (jangan pakai angka dari web search).]${weatherContext}\n\n${prompt}`,
+8. Musik (opsional): jika pengguna minta lagu/musik, sisipkan [musik={judul lagu nama artis}] — SELALU sertakan nama artis dalam kata kunci agar lagunya tepat. Default cukup 1 lagu; maksimal 3 lagu dan hanya jika pengguna meminta beberapa atau memang perlu dibandingkan. Posisinya bebas (tidak harus di akhir), harus berdiri sendiri di barisnya, dan TIDAK BOLEH di dalam tabel.
+9. DILARANG menampilkan data mentah: jangan pernah menempelkan JSON, potongan HTML, atau isi respons API apa adanya ke dalam jawaban (mis. {"description":"Weather ..."}). Ubah selalu menjadi kalimat biasa atau komponen yang tersedia di atas.
+10. Cuaca: hanya jika tersedia blok DATA CUACA di bawah. Ada dua kartu terpisah dan bebas posisinya (boleh salah satu saja, tidak harus berdempetan): [cuaca={nama kota}] untuk kartu cuaca utama dan [ramalan={nama kota}] untuk ramalan 5 hari. Tulis nama kota persis seperti pada DATA CUACA. Kartu cuaca TIDAK BOLEH diletakkan di dalam tabel, dan harus berdiri sendiri di barisnya. Semua angka/kondisi yang kamu sebutkan dalam teks WAJIB sama persis dengan DATA CUACA (jangan pakai angka dari web search).]${weatherContext}\n\n${prompt}`,
 
 
 
@@ -308,7 +310,20 @@ Aturan format jawaban:
   }
   if (buffer) handleLine(buffer);
 
-  return { response: renderRefs(text, refs).trim(), chatId };
+  return { response: stripRawData(renderRefs(text, refs)), chatId };
+}
+
+/** Buang sisa data mentah (JSON/HTML) yang kadang ikut tercetak model. */
+function stripRawData(text: string): string {
+  return text
+    .replace(/```(?:json|html)[\s\S]*?```/gi, "")
+    .replace(/^\s*[[{][\s\S]{0,4000}?["}\]]\s*$/gm, (block) =>
+      /"(description|temperature|forecast|current|weather|thumbnail|videoId)"\s*:/i.test(block)
+        ? ""
+        : block,
+    )
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
 export const Route = createFileRoute("/api/chat")({
