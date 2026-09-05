@@ -6,6 +6,7 @@ import rehypeKatex from "rehype-katex";
 import { ChartView } from "./ChartView";
 import { BingImage } from "./BingImage";
 import { WeatherCard, WeatherForecast } from "./WeatherCard";
+import { MusicCard } from "./MusicCard";
 
 
 
@@ -51,6 +52,7 @@ function normalizeSources(input: string): string {
   return input
     .replace(/\[bimg=\{([^}]+)\}\]/g, (_m, q: string) => `\`bimg:${q.trim()}\``)
     .replace(/\[cuaca=\{([^}]+)\}\]/g, (_m, q: string) => `\n\n\`cuaca:${q.trim()}\`\n\n`)
+    .replace(/\[(?:musik|music|lagu)=\{([^}]+)\}\]/g, (_m, q: string) => `\n\n\`musik:${q.trim()}\`\n\n`)
     .replace(/\[ramalan=\{([^}]+)\}\]/g, (_m, q: string) => `\n\n\`ramalan:${q.trim()}\`\n\n`)
 
     .replace(/\\\((.+?)\\\)/gs, (_m, m1) => `$${m1}$`)
@@ -163,6 +165,9 @@ function MarkdownTextBase({ text }: { text: string }) {
             }
             if (/^\s*cuaca\s*:/.test(raw)) {
               return <WeatherCard query={raw.replace(/^\s*cuaca\s*:/, "").trim()} />;
+            }
+            if (/^\s*musik\s*:/.test(raw)) {
+              return <MusicCard query={raw.replace(/^\s*musik\s*:/, "").trim()} />;
             }
             if (/^\s*ramalan\s*:/.test(raw)) {
               return <WeatherForecast query={raw.replace(/^\s*ramalan\s*:/, "").trim()} />;
