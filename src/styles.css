@@ -358,6 +358,7 @@ th.media-cell .chat-media-loading {
 }
 
 .music-card {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
@@ -461,4 +462,13 @@ th.media-cell .chat-media-loading {
 @keyframes music-bar {
   0%, 100% { height: 4px; }
   50% { height: 13px; }
+}
+
+.music-hidden-player {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+  border: 0;
 }
