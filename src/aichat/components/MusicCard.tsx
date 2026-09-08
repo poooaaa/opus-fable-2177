@@ -48,8 +48,20 @@ export function prefetchMusic(query: string): Promise<MusicTrack | "empty"> {
   return task;
 }
 
+/** Hanya satu pemutar aktif: pemutar lain otomatis dijeda. */
+let activeStop: (() => void) | null = null;
+
+export function claimPlayback(stop: () => void) {
+  if (activeStop && activeStop !== stop) activeStop();
+  activeStop = stop;
+}
+
+export function releasePlayback(stop: () => void) {
+  if (activeStop === stop) activeStop = null;
+}
+
 /** Indikator gelombang saat lagu diputar. */
-function PlayingBars() {
+export function PlayingBars() {
   return (
     <span className="music-bars" aria-hidden="true">
       <span />
@@ -58,6 +70,7 @@ function PlayingBars() {
     </span>
   );
 }
+
 
 function MusicCardBase({ query }: { query: string }) {
   const [track, setTrack] = useState<MusicTrack | "empty" | null>(cache.get(query) ?? null);
