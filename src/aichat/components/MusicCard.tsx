@@ -77,6 +77,24 @@ function MusicCardBase({ query }: { query: string }) {
   const [playing, setPlaying] = useState(false);
   const [started, setStarted] = useState(false);
   const frameRef = useRef<HTMLIFrameElement | null>(null);
+  const stopRef = useRef<() => void>(() => {});
+
+  const command = (func: "playVideo" | "pauseVideo") => {
+    frameRef.current?.contentWindow?.postMessage(
+      JSON.stringify({ event: "command", func, args: [] }),
+      "*",
+    );
+  };
+
+  stopRef.current = () => {
+    command("pauseVideo");
+    setPlaying(false);
+  };
+
+  useEffect(() => {
+    const stop = stopRef.current;
+    return () => releasePlayback(stop);
+  }, []);
 
   useEffect(() => {
     let disposed = false;
@@ -96,15 +114,9 @@ function MusicCardBase({ query }: { query: string }) {
 
   if (track === null || track === "empty") return null;
 
-  const command = (func: "playVideo" | "pauseVideo") => {
-    frameRef.current?.contentWindow?.postMessage(
-      JSON.stringify({ event: "command", func, args: [] }),
-      "*",
-    );
-  };
-
   const toggle = () => {
     if (!started) {
+      claimPlayback(stopRef.current);
       setStarted(true);
       setPlaying(true);
       return;
@@ -112,11 +124,14 @@ function MusicCardBase({ query }: { query: string }) {
     if (playing) {
       command("pauseVideo");
       setPlaying(false);
+      releasePlayback(stopRef.current);
     } else {
+      claimPlayback(stopRef.current);
       command("playVideo");
       setPlaying(true);
     }
   };
+
 
   return (
     <span className="music-block">
