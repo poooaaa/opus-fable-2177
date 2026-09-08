@@ -48,8 +48,20 @@ export function prefetchMusic(query: string): Promise<MusicTrack | "empty"> {
   return task;
 }
 
+/** Hanya satu pemutar aktif: pemutar lain otomatis dijeda. */
+let activeStop: (() => void) | null = null;
+
+export function claimPlayback(stop: () => void) {
+  if (activeStop && activeStop !== stop) activeStop();
+  activeStop = stop;
+}
+
+export function releasePlayback(stop: () => void) {
+  if (activeStop === stop) activeStop = null;
+}
+
 /** Indikator gelombang saat lagu diputar. */
-function PlayingBars() {
+export function PlayingBars() {
   return (
     <span className="music-bars" aria-hidden="true">
       <span />
@@ -59,11 +71,31 @@ function PlayingBars() {
   );
 }
 
+
 function MusicCardBase({ query }: { query: string }) {
   const [track, setTrack] = useState<MusicTrack | "empty" | null>(cache.get(query) ?? null);
   const [playing, setPlaying] = useState(false);
   const [started, setStarted] = useState(false);
   const frameRef = useRef<HTMLIFrameElement | null>(null);
+  const stopRef = useRef<() => void>(() => {});
+  const stopStable = useRef<() => void>(() => stopRef.current());
+
+  const command = (func: "playVideo" | "pauseVideo") => {
+    frameRef.current?.contentWindow?.postMessage(
+      JSON.stringify({ event: "command", func, args: [] }),
+      "*",
+    );
+  };
+
+  stopRef.current = () => {
+    command("pauseVideo");
+    setPlaying(false);
+  };
+
+  useEffect(() => {
+    const stop = stopStable.current;
+    return () => releasePlayback(stop);
+  }, []);
 
   useEffect(() => {
     let disposed = false;
@@ -83,15 +115,9 @@ function MusicCardBase({ query }: { query: string }) {
 
   if (track === null || track === "empty") return null;
 
-  const command = (func: "playVideo" | "pauseVideo") => {
-    frameRef.current?.contentWindow?.postMessage(
-      JSON.stringify({ event: "command", func, args: [] }),
-      "*",
-    );
-  };
-
   const toggle = () => {
     if (!started) {
+      claimPlayback(stopStable.current);
       setStarted(true);
       setPlaying(true);
       return;
@@ -99,11 +125,14 @@ function MusicCardBase({ query }: { query: string }) {
     if (playing) {
       command("pauseVideo");
       setPlaying(false);
+      releasePlayback(stopStable.current);
     } else {
+      claimPlayback(stopStable.current);
       command("playVideo");
       setPlaying(true);
     }
   };
+
 
   return (
     <span className="music-block">
