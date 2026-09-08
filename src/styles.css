@@ -358,6 +358,7 @@ th.media-cell .chat-media-loading {
 }
 
 .music-card {
+  position: relative;
   display: flex;
   align-items: center;
   gap: 12px;
