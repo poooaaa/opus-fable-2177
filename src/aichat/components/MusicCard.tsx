@@ -62,7 +62,8 @@ function PlayingBars() {
 function MusicCardBase({ query }: { query: string }) {
   const [track, setTrack] = useState<MusicTrack | "empty" | null>(cache.get(query) ?? null);
   const [playing, setPlaying] = useState(false);
-  const audioRef = useRef<HTMLAudioElement | null>(null);
+  const [started, setStarted] = useState(false);
+  const frameRef = useRef<HTMLIFrameElement | null>(null);
 
   useEffect(() => {
     let disposed = false;
@@ -80,25 +81,28 @@ function MusicCardBase({ query }: { query: string }) {
     };
   }, [query]);
 
-  useEffect(
-    () => () => {
-      audioRef.current?.pause();
-    },
-    [],
-  );
-
   if (track === null || track === "empty") return null;
 
+  const command = (func: "playVideo" | "pauseVideo") => {
+    frameRef.current?.contentWindow?.postMessage(
+      JSON.stringify({ event: "command", func, args: [] }),
+      "*",
+    );
+  };
+
   const toggle = () => {
-    if (!audioRef.current) {
-      const audio = new Audio(`https://merajah.xyz/music/download?id=${track.id}`);
-      audio.onended = () => setPlaying(false);
-      audio.onpause = () => setPlaying(false);
-      audio.onplay = () => setPlaying(true);
-      audioRef.current = audio;
+    if (!started) {
+      setStarted(true);
+      setPlaying(true);
+      return;
     }
-    if (playing) audioRef.current.pause();
-    else void audioRef.current.play().catch(() => setPlaying(false));
+    if (playing) {
+      command("pauseVideo");
+      setPlaying(false);
+    } else {
+      command("playVideo");
+      setPlaying(true);
+    }
   };
 
   return (
