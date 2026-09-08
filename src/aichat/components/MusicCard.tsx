@@ -132,6 +132,17 @@ function MusicCardBase({ query }: { query: string }) {
             <Play size={18} strokeWidth={2.2} fill="currentColor" />
           )}
         </button>
+        {started && (
+          <iframe
+            ref={frameRef}
+            title={track.title}
+            src={`https://www.youtube.com/embed/${track.id}?autoplay=1&enablejsapi=1&playsinline=1&controls=0`}
+            allow="autoplay; encrypted-media"
+            className="music-hidden-player"
+            aria-hidden="true"
+            tabIndex={-1}
+          />
+        )}
       </span>
     </span>
   );
