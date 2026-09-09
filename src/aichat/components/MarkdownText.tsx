@@ -7,6 +7,7 @@ import { ChartView } from "./ChartView";
 import { BingImage } from "./BingImage";
 import { WeatherCard, WeatherForecast } from "./WeatherCard";
 import { MusicCard } from "./MusicCard";
+import { LyricsCard } from "./LyricsCard";
 
 
 
