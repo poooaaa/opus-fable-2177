@@ -170,6 +170,9 @@ function MarkdownTextBase({ text }: { text: string }) {
             if (/^\s*musik\s*:/.test(raw)) {
               return <MusicCard query={raw.replace(/^\s*musik\s*:/, "").trim()} />;
             }
+            if (/^\s*lirik\s*:/.test(raw)) {
+              return <LyricsCard query={raw.replace(/^\s*lirik\s*:/, "").trim()} />;
+            }
             if (/^\s*ramalan\s*:/.test(raw)) {
               return <WeatherForecast query={raw.replace(/^\s*ramalan\s*:/, "").trim()} />;
             }
