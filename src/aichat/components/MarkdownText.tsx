@@ -7,6 +7,7 @@ import { ChartView } from "./ChartView";
 import { BingImage } from "./BingImage";
 import { WeatherCard, WeatherForecast } from "./WeatherCard";
 import { MusicCard } from "./MusicCard";
+import { LyricsCard } from "./LyricsCard";
 
 
 
@@ -53,6 +54,7 @@ function normalizeSources(input: string): string {
     .replace(/\[bimg=\{([^}]+)\}\]/g, (_m, q: string) => `\`bimg:${q.trim()}\``)
     .replace(/\[cuaca=\{([^}]+)\}\]/g, (_m, q: string) => `\n\n\`cuaca:${q.trim()}\`\n\n`)
     .replace(/\[(?:musik|music|lagu)=\{([^}]+)\}\]/g, (_m, q: string) => `\n\n\`musik:${q.trim()}\`\n\n`)
+    .replace(/\[(?:lirik|lyric|lyrics)=\{([^}]+)\}\]/g, (_m, q: string) => `\n\n\`lirik:${q.trim()}\`\n\n`)
     .replace(/\[ramalan=\{([^}]+)\}\]/g, (_m, q: string) => `\n\n\`ramalan:${q.trim()}\`\n\n`)
 
     .replace(/\\\((.+?)\\\)/gs, (_m, m1) => `$${m1}$`)
@@ -168,6 +170,9 @@ function MarkdownTextBase({ text }: { text: string }) {
             }
             if (/^\s*musik\s*:/.test(raw)) {
               return <MusicCard query={raw.replace(/^\s*musik\s*:/, "").trim()} />;
+            }
+            if (/^\s*lirik\s*:/.test(raw)) {
+              return <LyricsCard query={raw.replace(/^\s*lirik\s*:/, "").trim()} />;
             }
             if (/^\s*ramalan\s*:/.test(raw)) {
               return <WeatherForecast query={raw.replace(/^\s*ramalan\s*:/, "").trim()} />;
