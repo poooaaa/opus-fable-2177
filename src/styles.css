@@ -472,3 +472,32 @@ th.media-cell .chat-media-loading {
   pointer-events: none;
   border: 0;
 }
+
+/* === Kartu aplikasi HTML === */
+.app-card {
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s ease;
+}
+
+.app-card:hover {
+  background-color: #232328;
+}
+
+.app-art {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: #2a2a30;
+  color: #f0b8a6;
+}
+
+.app-busy {
+  animation: app-busy-spin 0.9s linear infinite;
+}
+
+@keyframes app-busy-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
