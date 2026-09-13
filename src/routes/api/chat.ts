@@ -251,8 +251,8 @@ Aturan format jawaban:
 7. Gambar (SANGAT DIANJURKAN): sisipkan dengan sintaks [bimg={kata kunci}], contoh: [bimg={albert einstein}]. Sertakan gambar setiap kali topik bisa dilihat wujudnya: benda, orang, tempat, hewan, tumbuhan, produk, bangunan, model/diagram ilmiah (mis. "bentuk atom Dalton" → [bimg={dalton atomic model}]), peristiwa, karya seni, makanan, kendaraan, logo, dsb. Jika pertanyaan mengandung kata seperti bentuk, rupa, wujud, gambar, foto, seperti apa, model, struktur, diagram, contoh — gambar WAJIB ada. Letakkan gambar dekat bagian teks yang menjelaskannya (tidak harus di akhir), boleh juga di dalam sel tabel. Gunakan 1-3 gambar (boleh lebih bila membandingkan beberapa hal), kata kunci pencarian sebaiknya bahasa Inggris dan spesifik. Jangan pakai URL gambar mentah. Hanya lewatkan gambar untuk topik yang benar-benar abstrak (mis. definisi matematis murni, kode, saran menulis).
 8. Musik (opsional): jika pengguna minta lagu/musik, sisipkan [musik={judul lagu nama artis}] — SELALU sertakan nama artis dalam kata kunci agar lagunya tepat. Default cukup 1 lagu; maksimal 3 lagu dan hanya jika pengguna meminta beberapa atau memang perlu dibandingkan. Posisinya bebas (tidak harus di akhir), harus berdiri sendiri di barisnya, dan TIDAK BOLEH di dalam tabel.
 9. DILARANG menampilkan data mentah: jangan pernah menempelkan JSON, potongan HTML, atau isi respons API apa adanya ke dalam jawaban (mis. {"description":"Weather ..."}). Ubah selalu menjadi kalimat biasa atau komponen yang tersedia di atas.
-11. Aplikasi HTML: jika pengguna minta dibuatkan aplikasi/website/game/tool, buat dalam SATU jawaban bersama teks penjelasan singkat. Kode ditulis dalam satu blok kode berbahasa htmlapp (\`\`\`htmlapp). Baris PERTAMA di dalam blok wajib "name: Nama Aplikasi", lalu diikuti satu file HTML lengkap (<!DOCTYPE html> … </html>) dengan CSS di dalam <style> dan JavaScript di dalam <script> — tanpa file eksternal. Jangan pernah menulis kode aplikasi ini di blok kode html/js biasa. Jika aplikasi butuh gambar, pakai placeholder {{img:kata kunci bahasa Inggris}} sebagai nilai src, contoh <img src="{{img:red sports car}}">. Blok htmlapp harus berdiri sendiri (tidak di dalam tabel), posisinya bebas, dan maksimal satu blok per jawaban kecuali pengguna minta beberapa aplikasi.
-10. Cuaca: hanya jika tersedia blok DATA CUACA di bawah. Ada dua kartu terpisah dan bebas posisinya (boleh salah satu saja, tidak harus berdempetan): [cuaca={nama kota}] untuk kartu cuaca utama dan [ramalan={nama kota}] untuk ramalan 5 hari. Tulis nama kota persis seperti pada DATA CUACA. Kartu cuaca TIDAK BOLEH diletakkan di dalam tabel, dan harus berdiri sendiri di barisnya. Semua angka/kondisi yang kamu sebutkan dalam teks WAJIB sama persis dengan DATA CUACA (jangan pakai angka dari web search).]${weatherContext}\n\n${prompt}`,
+10. Cuaca: hanya jika tersedia blok DATA CUACA di bawah. Ada dua kartu terpisah dan bebas posisinya (boleh salah satu saja, tidak harus berdempetan): [cuaca={nama kota}] untuk kartu cuaca utama dan [ramalan={nama kota}] untuk ramalan 5 hari. Tulis nama kota persis seperti pada DATA CUACA. Kartu cuaca TIDAK BOLEH diletakkan di dalam tabel, dan harus berdiri sendiri di barisnya. Semua angka/kondisi yang kamu sebutkan dalam teks WAJIB sama persis dengan DATA CUACA (jangan pakai angka dari web search).
+11. Aplikasi HTML (WAJIB untuk permintaan membuat aplikasi/website/game/tool): jawaban BELUM SELESAI dan TIDAK BOLEH dikirim jika belum memuat satu blok \`\`\`htmlapp. Berikan teks penjelasan singkat, lalu kode dalam satu blok berbahasa htmlapp. Baris PERTAMA wajib "name: Nama Aplikasi", lalu satu file HTML lengkap (<!DOCTYPE html> … </html>) dengan CSS dalam <style> dan JavaScript dalam <script>, tanpa file eksternal. Jangan gunakan blok html, css, atau javascript terpisah. Jika butuh gambar, gunakan {{img:kata kunci bahasa Inggris}} sebagai nilai src, contoh <img src="{{img:red sports car}}">. Blok harus berdiri sendiri, bebas posisinya, dan maksimal satu kecuali pengguna meminta beberapa aplikasi. Jangan hanya menulis judul "Kode Website" tanpa blok htmlapp.]${weatherContext}\n\n${prompt}`,
 
 
 
@@ -311,13 +311,39 @@ Aturan format jawaban:
   }
   if (buffer) handleLine(buffer);
 
-  return { response: stripRawData(renderRefs(text, refs)), chatId };
+  return { response: cleanAnswer(renderRefs(text, refs), prompt), chatId };
 }
 
-/** Buang sisa data mentah (JSON/HTML) yang kadang ikut tercetak model. */
-function stripRawData(text: string): string {
-  return text
-    .replace(/```(?:json|html)[\s\S]*?```/gi, "")
+function isAppRequest(prompt: string): boolean {
+  return /\b(?:buat(?:kan)?|bikin(?:kan)?|generate|create|bangun(?:kan)?)\b[\s\S]{0,80}\b(?:website|web|aplikasi|app|game|tool)\b/i.test(
+    prompt,
+  );
+}
+
+function appName(prompt: string): string {
+  const subject = prompt
+    .replace(/^.*?\b(?:website|web|aplikasi|app|game|tool)\b\s*/i, "")
+    .replace(/\b(?:yang|dengan|untuk|pakai|menggunakan)\b[\s\S]*$/i, "")
+    .replace(/[^\p{L}\p{N}\s-]/gu, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+  return subject ? subject.slice(0, 48) : "Aplikasi";
+}
+
+/** Pastikan HTML buatan AI menjadi kartu unduhan meski model memakai pagar `html`. */
+function normalizeAppBlock(text: string, prompt: string): string {
+  if (!isAppRequest(prompt) || /```htmlapp\b/i.test(text)) return text;
+
+  return text.replace(
+    /```html\s*\n(\s*(?:<!doctype\s+html[^>]*>|<html\b)[\s\S]*?<\/html>\s*)```/i,
+    (_block, html: string) => `\`\`\`htmlapp\nname: ${appName(prompt)}\n${html.trim()}\n\`\`\``,
+  );
+}
+
+/** Buang data mentah tanpa menghapus blok htmlapp yang membentuk kartu aplikasi. */
+function cleanAnswer(text: string, prompt: string): string {
+  return normalizeAppBlock(text, prompt)
+    .replace(/```(?:json|html)(?=[\t \r\n])[\s\S]*?```/gi, "")
     .replace(/^\s*[[{][\s\S]{0,4000}?["}\]]\s*$/gm, (block) =>
       /"(description|temperature|forecast|current|weather|thumbnail|videoId)"\s*:/i.test(block)
         ? ""
