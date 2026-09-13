@@ -205,7 +205,7 @@ function MarkdownTextBase({ text }: { text: string }) {
           pre: ({ children }) => {
             const child = Array.isArray(children) ? children[0] : children;
             const cls = (child as { props?: { className?: string } } | undefined)?.props?.className;
-            if (/language-(chartjs|echarts|chart)/.test(cls || "")) return <>{children}</>;
+            if (/language-(chartjs|echarts|chart|htmlapp)/.test(cls || "")) return <>{children}</>;
             return <pre className="my-3 w-full overflow-x-auto">{children}</pre>;
           },
           table: ({ children }) => (
