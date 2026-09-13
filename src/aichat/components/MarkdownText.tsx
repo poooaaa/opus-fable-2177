@@ -154,6 +154,14 @@ function MarkdownTextBase({ text }: { text: string }) {
           },
           code: ({ className, children, ...props }) => {
             const raw = String(children);
+            if (/language-htmlapp/.test(className || "")) {
+              const lines = raw.replace(/\n$/, "").split("\n");
+              let name = "Aplikasi";
+              if (lines[0] && /^\s*name\s*:/i.test(lines[0])) {
+                name = lines.shift()!.replace(/^\s*name\s*:/i, "").trim() || name;
+              }
+              return <AppCard name={name} code={lines.join("\n")} />;
+            }
             if (/language-(chartjs|echarts|chart)/.test(className || "")) {
               return <ChartView code={raw} />;
             }
